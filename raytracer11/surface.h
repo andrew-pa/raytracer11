@@ -1,5 +1,6 @@
 #pragma once
 #include "cmmn.h"	
+#include "renderer.h"
 
 namespace raytracer11
 {
@@ -19,12 +20,20 @@ namespace raytracer11
 		{}
 	};
 
+	class renderer;
+
+	struct material
+	{
+		virtual vec3 shade(renderer* rndr, const ray& r, vec3 l, vec3 lc, const hit_record& hr, uint depth = 0) = 0;
+	};
+
 	class surface
 	{
 	public:
 		virtual bool hit(const ray& r, hit_record& hr) = 0;
 		virtual float hit(const ray& r, float xt) = 0;
 		propr(virtual aabb, bounds, const = 0);
+		propr(virtual material*, mat, const = 0); //this is actually a read/write property because it returns a pointer
 		virtual ~surface(){}
 	};
 
@@ -32,9 +41,10 @@ namespace raytracer11
 	{
 		vec3 _c;
 		float _r;
+		material* _mat;
 	public:
-		sphere(vec3 center, float radius)
-			: _c(center), _r(radius)
+		sphere(vec3 center, float radius, material* m = nullptr)
+			: _c(center), _r(radius), _mat(m)
 		{}
 
 		bool hit(const ray& r, hit_record& hr) override;
@@ -47,6 +57,8 @@ namespace raytracer11
 
 		proprw(vec3, center, { return _c; });
 		proprw(float, radius, { return _r; });
+
+		inline material* mat() const override { return _mat; }
 	};
 }
 

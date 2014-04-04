@@ -67,12 +67,14 @@
     <ClInclude Include="aux_math.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="cmmn.h" />
+    <ClInclude Include="basic_material_renderer.h" />
     <ClInclude Include="parallel_tiles_renderer.h" />
     <ClInclude Include="renderer.h" />
     <ClInclude Include="surface.h" />
     <ClInclude Include="texture.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="basic_material_renderer.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="parallel_tiles_renderer.cpp" />
     <ClCompile Include="renderer.cpp" />

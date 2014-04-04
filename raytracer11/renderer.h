@@ -6,10 +6,10 @@
 
 namespace raytracer11
 {
+	class surface;
 	class renderer
 	{
 	protected:
-		virtual vec3 raycolor(const ray& r, uint depth = 0) = 0;
 		camera _c;
 		surface* _scene;
 		texture<vec3,uvec2,vec2>* rt;
@@ -18,6 +18,7 @@ namespace raytracer11
 		~renderer();
 
 		virtual void render() = 0;
+		virtual vec3 raycolor(const ray& r, uint depth = 0) = 0;
 
 		proprw(camera, cam, { return _c; });
 		proprw(surface*, scene, { return _scene; });
