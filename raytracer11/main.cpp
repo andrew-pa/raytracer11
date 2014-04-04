@@ -13,11 +13,15 @@ int main()
 
 	camera cam(vec3(0, 2, -5), vec3(0), (vec2)rt->size(), 1.f);
 
-	sphere* s = new sphere(vec3(0), .75f, new basic_material(vec3(0.1f,.8f,0), vec3(.2f,.8f,0), 64));
+	sphere* s = new sphere(vec3(0), .75f, 
+		new basic_material(vec3(0.1f,.8f,0), vec3(.2f,.8f,0), 500
+		));
 
 	basic_material_renderer rd(cam, s, rt);
 	
-	rd.lights().push_back(point_light(vec3(0, 4, -4), vec3(1)));
+	rd.lights().push_back(point_light(vec3(0, 4, 0), vec3(2)));
+	rd.lights().push_back(point_light(vec3(4, 4, -4), vec3(2)));
+	rd.lights().push_back(point_light(vec3(6, -4, -3), vec3(2)));
 
 	rd.render();
 

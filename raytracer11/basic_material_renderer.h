@@ -12,13 +12,7 @@ namespace raytracer11
 		point_light(vec3 p, vec3 c)
 			: pos(p), color(c){}
 	};
-#ifndef p3
-#define p3
-	vec3 pow3(vec3 v, float p)
-	{
-		return vec3(pow(v.x, p), pow(v.y, p), pow(v.z, p));
-	}
-#endif
+
 	struct basic_material : public material
 	{
 		vec3 diffuse;
