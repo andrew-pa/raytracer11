@@ -15,48 +15,45 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="cmmn.h">
+    <ClInclude Include="..\inc\camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="texture.h">
+    <ClInclude Include="..\inc\cmmn.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="surface.h">
+    <ClInclude Include="..\inc\basic_material_renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="aux_math.h">
+    <ClInclude Include="..\inc\parallel_tiles_renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="camera.h">
+    <ClInclude Include="..\inc\renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="renderer.h">
+    <ClInclude Include="..\inc\surface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="parallel_tiles_renderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="basic_material_renderer.h">
+    <ClInclude Include="..\inc\texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="..\src\basic_material_renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="texture.cpp">
+    <ClCompile Include="..\src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="surface.cpp">
+    <ClCompile Include="..\src\parallel_tiles_renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="renderer.cpp">
+    <ClCompile Include="..\src\renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="parallel_tiles_renderer.cpp">
+    <ClCompile Include="..\src\surface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="basic_material_renderer.cpp">
+    <ClCompile Include="..\src\texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

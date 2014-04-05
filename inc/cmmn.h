@@ -20,8 +20,6 @@ using namespace std;
 #include <glm/gtx/random.hpp>
 using namespace glm;
 
-#include "aux_math.h"
-
 #define proprw(t, n, gc) inline t& n() gc
 #define propr(t, n, gc) inline t n() const gc
 

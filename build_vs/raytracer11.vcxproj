@@ -19,7 +19,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -38,12 +38,15 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>..\bin\$(Configuration)\</OutDir>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>false</SDLCheck>
+      <AdditionalIncludeDirectories>..\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -64,22 +67,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="inc\aux_math.h" />
-    <ClInclude Include="inc\camera.h" />
-    <ClInclude Include="inc\cmmn.h" />
-    <ClInclude Include="inc\basic_material_renderer.h" />
-    <ClInclude Include="inc\parallel_tiles_renderer.h" />
-    <ClInclude Include="inc\renderer.h" />
-    <ClInclude Include="inc\surface.h" />
-    <ClInclude Include="inc\texture.h" />
+    <ClInclude Include="..\inc\camera.h" />
+    <ClInclude Include="..\inc\cmmn.h" />
+    <ClInclude Include="..\inc\basic_material_renderer.h" />
+    <ClInclude Include="..\inc\parallel_tiles_renderer.h" />
+    <ClInclude Include="..\inc\renderer.h" />
+    <ClInclude Include="..\inc\surface.h" />
+    <ClInclude Include="..\inc\texture.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\basic_material_renderer.cpp" />
-    <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\parallel_tiles_renderer.cpp" />
-    <ClCompile Include="src\renderer.cpp" />
-    <ClCompile Include="src\surface.cpp" />
-    <ClCompile Include="src\texture.cpp" />
+    <ClCompile Include="..\src\basic_material_renderer.cpp" />
+    <ClCompile Include="..\src\main.cpp" />
+    <ClCompile Include="..\src\parallel_tiles_renderer.cpp" />
+    <ClCompile Include="..\src\renderer.cpp" />
+    <ClCompile Include="..\src\surface.cpp" />
+    <ClCompile Include="..\src\texture.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
