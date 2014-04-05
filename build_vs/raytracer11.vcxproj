@@ -67,6 +67,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\inc\bvh_node.h" />
     <ClInclude Include="..\inc\camera.h" />
     <ClInclude Include="..\inc\cmmn.h" />
     <ClInclude Include="..\inc\basic_material_renderer.h" />
@@ -77,6 +78,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\basic_material_renderer.cpp" />
+    <ClCompile Include="..\src\bvh_node.cpp" />
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\parallel_tiles_renderer.cpp" />
     <ClCompile Include="..\src\renderer.cpp" />

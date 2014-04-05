@@ -5,6 +5,7 @@
 #include "renderer.h"
 #include "parallel_tiles_renderer.h"
 #include "basic_material_renderer.h"
+#include "bvh_node.h"
 using namespace raytracer11;
 
 int main()
@@ -17,7 +18,18 @@ int main()
 		new basic_material(vec3(0.1f,.8f,0), vec3(.2f,.8f,0), 500
 		));
 
-	basic_material_renderer rd(cam, s, rt);
+	vector<surface*> objs;
+	objs.push_back(new sphere(vec3(0), .75f,
+		new basic_material(vec3(0, .8f, 0), vec3(1), 500)));
+	objs.push_back(new sphere(vec3(1,0,0), .75f,
+		new basic_material(vec3(.8f, 0, 0), vec3(1), 200)));
+	objs.push_back(new sphere(vec3(-1,0,0), .75f,
+		new basic_material(vec3(0, 0, .8f), vec3(1), 50)));
+
+
+	bvh_node* sc = new bvh_node(objs);
+
+	basic_material_renderer rd(cam, sc, rt);
 	
 	rd.lights().push_back(point_light(vec3(0, 4, 0), vec3(2)));
 	rd.lights().push_back(point_light(vec3(4, 4, -4), vec3(2)));

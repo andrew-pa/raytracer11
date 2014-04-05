@@ -33,7 +33,7 @@ namespace raytracer11
 		virtual bool hit(const ray& r, hit_record& hr) = 0;
 		virtual float hit(const ray& r, float xt) = 0;
 		propr(virtual aabb, bounds, const = 0);
-		propr(virtual material*, mat, const = 0); //this is actually a read/write property because it returns a pointer
+		propr(virtual material*, mat, const{ return nullptr; }); //this is actually a read/write property because it returns a pointer
 		virtual ~surface(){}
 	};
 

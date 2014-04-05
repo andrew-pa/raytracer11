@@ -84,17 +84,30 @@ namespace raytracer11
 		inline bool hit(const ray& r) const
 		{
 			if (contains(r.e)) return true;
+			
 			vec3 rrd = 1.f / r.d;
+			
 			vec3 t1 = (_min - r.e) * rrd;
 			vec3 t2 = (_max - r.e) * rrd;
 
-			vec3 mins = glm::min(t1, t2);
-			vec3 maxs = glm::max(t1, t2);
+			vec3 m12 = glm::min(t1, t2);
+			vec3 x12 = glm::max(t1, t2);
 
-			float tmin = glm::max(mins.x, glm::max(mins.y, mins.z));
-			float tmax = glm::min(mins.x, glm::min(mins.y, mins.z));
+			float tmin = m12.x;
+			tmin = glm::max(tmin, m12.y);
+			tmin = glm::max(tmin, m12.z);
+
+			float tmax = x12.x;
+			tmax = glm::min(tmax, x12.y);
+			tmax = glm::min(tmax, x12.z);
+
 
 			return tmax >= tmin;
+		}
+
+		inline vec3 center()
+		{
+			return (_min + _max) * 1.f/2.f;
 		}
 	};
 
