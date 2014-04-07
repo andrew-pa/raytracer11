@@ -23,13 +23,21 @@ namespace raytracer11
 		mutex tile_queue_mutex;
 		queue<uvec2> tiles;
 
+		vector<uvec2> start_tiles;
+
 		for (uint y = 0; y < rt->size().y; y += _tilesize.y)
 		{
 			for (uint x = 0; x < rt->size().x; x += _tilesize.x)
 			{
-				tiles.push(uvec2(x, y));
+				start_tiles.push_back(uvec2(x, y));
 			}
 		}
+
+		for (int i = 0; i < 20 + start_tiles.size(); ++i)
+			swap(start_tiles[rand() % start_tiles.size()], start_tiles[rand() % start_tiles.size()]);
+
+		for (const auto& t : start_tiles)
+			tiles.push(t);
 
 		vector<thread> threads;
 		for (int ti = 0; ti < _numthreads; ++ti)

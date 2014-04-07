@@ -88,7 +88,7 @@ int main()
 		new basic_material(vec3(0, 0, .8f), vec3(1), 50)));
 */
 
-	auto mat = new basic_material(vec3(.8f, .4f, 0), vec3(1, .7f, .3f), 200);
+	auto mat = new basic_material(vec3(.8f, .4f, 0), vec3(.9f, .7f, .3f), 150);
 
 	for (float z = 0; z < 33; ++z)
 	{

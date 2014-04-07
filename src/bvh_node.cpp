@@ -43,6 +43,10 @@ namespace raytracer11
 	bool bvh_node::hit(const ray& r, hit_record& hr)
 	{
 		if (!_bounds.hit(r)) return false;
+		if(_left != nullptr && _right == nullptr)
+		{
+			return _left->hit(r, hr);
+		}
 		hit_record lhr(hr), rhr(hr);
 		bool lh = (_left != nullptr ?
 			_left->hit(r, lhr) : false);
