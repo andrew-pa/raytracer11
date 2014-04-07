@@ -36,27 +36,31 @@ namespace raytracer11
 		{
 			threads.push_back(thread([&] {
 				uint tiles_rendered = 0;
-				bool done = false;
-				while(!done)
+				bool notdone = true;
+				auto start_time = chrono::system_clock::now();
+				while(notdone)
 				{
 					uvec2 t;
 					{
 						unique_lock<mutex> lm(tile_queue_mutex);
-						if (tiles.empty()) { done = true; break; }
+						if (tiles.empty()) { notdone = false; break; }
 						t = tiles.front(); tiles.pop();
-						done = tiles.empty();
 					}
 					render_tile(t);
 					tiles_rendered++;
 				}
-				cout << "thread " << this_thread::get_id() << " rendered " << tiles_rendered << " chunks" << endl;
+				auto end_time = chrono::system_clock::now();
+				long tm = chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count();
+				auto tmpt = (double)tm / (double)tiles_rendered;
+				cout << "thread " << this_thread::get_id() << " rendered " << tiles_rendered << " tiles"
+						<< " took " << (double)tm/1000000.0 << "ms, " << tmpt/1000000.0 << "ms/tile" << endl;
 			}));
 		}
 
 		for(auto& t : threads)
 		{
 			t.join();
-			this_thread::sleep_for(std::chrono::microseconds(20));
+			this_thread::sleep_for(std::chrono::milliseconds(5));
 		}
 	}
 }

@@ -18,7 +18,7 @@ namespace raytracer11
 		vec3 h = normalize(v + l);
 		vec3 Ls = (specular*lc) * pow(glm::max(0.f,dot(hr.norm, h)), specular_exp);
 		float shadow = 1.f;
-		if (rndr->scene()->hit(ray(r(hr.t) + l*.001f, l), 10000.f) > 0)
+		if (rndr->scene()->hit(ray(r(hr.t) + l*.001f, l), 10000.f) < 10000.f)
 			shadow = .2f;
 		return (Ld+Ls)*shadow;
 	}

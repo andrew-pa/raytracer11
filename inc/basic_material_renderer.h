@@ -34,12 +34,12 @@ namespace raytracer11
 		{
 			return mix(
 					vec3(0, .3f, 1),
-					vec3(0, .1f, .4f), 
+					vec3(0, .1f, .2f), 
 					rd.y*.5f);
 		}
 		vector<point_light> _lights;
 	public:
-		const uint max_depth = 16;
+		const uint max_depth = 4;
 
 		vec3 raycolor(const ray& r, uint depth = 0) override;
 

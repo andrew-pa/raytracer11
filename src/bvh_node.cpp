@@ -33,6 +33,7 @@ namespace raytracer11
 			auto left_half = vector<surface*>(objects.begin(), objects.begin() + half);
 			auto right_half = vector<surface*>(objects.begin() + half, objects.end());
 			//optomize case where left node should only be a pntr to a primitive because left_half.size() == 1
+			
 			_left = new bvh_node(left_half, (axi + 1) % 3);
 			_right = new bvh_node(right_half, (axi + 1) % 3);
 			_bounds = aabb(_left->bounds(), _right->bounds());
@@ -54,24 +55,21 @@ namespace raytracer11
 				hr = lhr;
 				return true;
 			}
-			else if(rhr.t < lhr.t)
+			else
 			{
 				hr = rhr;
 				return true;
 			}
 		}
-		else
+		else if(lh)
 		{
-			if(lh && !rh)
-			{
-				hr = lhr;
-				return true;
-			}
-			else if(!lh && rh)
-			{
-				hr = rhr;
-				return true;
-			}
+			hr = lhr;
+			return true;
+		}
+		else if(rh)
+		{
+			hr = rhr;
+			return true;
 		}
 		return false;
 	}
@@ -90,21 +88,18 @@ namespace raytracer11
 			{
 				return lt;
 			}
-			else if (rt < lt)
+			else
 			{
 				return rt;
 			}
 		}
-		else
+		else if (lh)
 		{
-			if (lh && !rh)
-			{
-				return lt;
-			}
-			else if (!lh && rh)
-			{
-				return rt;
-			}
+			return lt;
+		}
+		else if (rh)
+		{
+			return rt;
 		}
 		return xt;
 	}

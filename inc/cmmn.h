@@ -11,6 +11,7 @@
 #include <functional>
 #include <exception>
 #include <algorithm>
+#include <chrono>
 using namespace std;
 
 #include <glm/glm.hpp>
@@ -22,6 +23,37 @@ using namespace glm;
 
 #define proprw(t, n, gc) inline t& n() gc
 #define propr(t, n, gc) inline t n() const gc
+
+template <typename T>
+struct property_type
+{
+	T* _data;
+	property_type(T* x)
+		: _data(x)	{}
+
+	inline virtual operator T()
+	{
+		return *_data;
+	}
+
+	inline virtual T& operator =(T n)
+	{
+		*_data = n;
+		return *_data;
+	}
+
+	inline virtual T* operator ->()
+	{
+		return _data;
+	}
+	inline virtual T& operator *()
+	{
+		return *_data;
+	}
+
+
+	virtual ~property_type() {}
+};
 
 namespace raytracer11
 {
