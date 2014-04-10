@@ -80,12 +80,13 @@ namespace raytracer11
 
 	float bvh_node::hit(const ray& r, float xt)
 	{
-		if (!_bounds.hit(r)) return false;
-		float lt = xt, rt = xt;
-		bool lh = (_left != nullptr ?
-			_left->hit(r, lt) : false);
-		bool rh = (_right != nullptr ?
-			_right->hit(r, rt) : false);
+		if (!_bounds.hit(r)) return -1;
+		float lt = (_left != nullptr ?
+			_left->hit(r, xt) : -1);
+		float rt = (_right != nullptr ?
+			_right->hit(r, xt) : -1);
+		bool lh = lt >= 0;
+		bool rh = rt >= 0;
 		if (lh&&rh)
 		{
 			if (lt < rt)
@@ -105,6 +106,6 @@ namespace raytracer11
 		{
 			return rt;
 		}
-		return xt;
+		return -1;
 	}
 }

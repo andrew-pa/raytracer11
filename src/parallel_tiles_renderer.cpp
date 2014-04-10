@@ -18,6 +18,31 @@ namespace raytracer11
 		}
 	}
 
+	void parallel_tiles_renderer::render_tile_aa(uvec2 pos)
+	{
+		float smpl = (1.f / (float)_samples);
+		ray r(vec3(0), vec3(0));
+		hit_record hr(10000.f);
+		for (float y = pos.y; y < pos.y + _tilesize.y && y < rt->size().y; ++y)
+		{
+			for (float x = pos.x; x < pos.x + _tilesize.x && x < rt->size().x; ++x)
+			{
+				vec3 fc = vec3(0);
+				for (float p = 0; p < _samples; ++p)
+				{
+					for (float q = 0; q < _samples; ++q)
+					{
+						vec2 aaof = (vec2(p, q) + linearRand(vec2(-1), vec2(1))) * smpl;
+						r = _c.generate_ray(vec2(x, y)+aaof);
+						hr.t = 100000.f;
+						fc += raycolor(r);
+					}
+				}
+				rt->pixel(uvec2(x, y)) = fc * (smpl*smpl);
+			}
+		}
+	}
+
 	void parallel_tiles_renderer::render()
 	{
 		mutex tile_queue_mutex;
@@ -42,27 +67,54 @@ namespace raytracer11
 		vector<thread> threads;
 		for (int ti = 0; ti < _numthreads; ++ti)
 		{
-			threads.push_back(thread([&] {
-				uint tiles_rendered = 0;
-				bool notdone = true;
-				auto start_time = chrono::system_clock::now();
-				while(notdone)
-				{
-					uvec2 t;
+			if(_samples == 0)
+			{			
+				threads.push_back(thread([&] {
+					uint tiles_rendered = 0;
+					bool notdone = true;
+					auto start_time = chrono::system_clock::now();
+					while(notdone)
 					{
-						unique_lock<mutex> lm(tile_queue_mutex);
-						if (tiles.empty()) { notdone = false; break; }
-						t = tiles.front(); tiles.pop();
+						uvec2 t;
+						{
+							unique_lock<mutex> lm(tile_queue_mutex);
+							if (tiles.empty()) { notdone = false; break; }
+							t = tiles.front(); tiles.pop();
+						}
+						render_tile(t);
+						tiles_rendered++;
 					}
-					render_tile(t);
-					tiles_rendered++;
-				}
-				auto end_time = chrono::system_clock::now();
-				long tm = chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count();
-				auto tmpt = (double)tm / (double)tiles_rendered;
-				cout << "thread " << this_thread::get_id() << " rendered " << tiles_rendered << " tiles"
-						<< " took " << (double)tm/1000000.0 << "ms, " << tmpt/1000000.0 << "ms/tile" << endl;
-			}));
+					auto end_time = chrono::system_clock::now();
+					long tm = chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count();
+					auto tmpt = (double)tm / (double)tiles_rendered;
+					cout << "thread " << this_thread::get_id() << " rendered " << tiles_rendered << " tiles"
+							<< " took " << (double)tm/1000000.0 << "ms, " << tmpt/1000000.0 << "ms/tile" << endl;
+				}));
+			}
+			else
+			{
+				threads.push_back(thread([&] {
+					uint tiles_rendered = 0;
+					bool notdone = true;
+					auto start_time = chrono::system_clock::now();
+					while (notdone)
+					{
+						uvec2 t;
+						{
+							unique_lock<mutex> lm(tile_queue_mutex);
+							if (tiles.empty()) { notdone = false; break; }
+							t = tiles.front(); tiles.pop();
+						}
+						render_tile_aa(t);
+						tiles_rendered++;
+					}
+					auto end_time = chrono::system_clock::now();
+					long tm = chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count();
+					auto tmpt = (double)tm / (double)tiles_rendered;
+					cout << "thread " << this_thread::get_id() << " rendered " << tiles_rendered << " tiles"
+						<< " took " << (double)tm / 1000000.0 << "ms, " << tmpt / 1000000.0 << "ms/tile" << endl;
+				}));
+			}
 		}
 
 		for(auto& t : threads)

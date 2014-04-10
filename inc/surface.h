@@ -60,5 +60,33 @@ namespace raytracer11
 
 		inline material* mat() const override { return _mat; }
 	};
+
+	class box : public surface
+	{
+		vec3 _center;
+		vec3 _extents;
+		material* _mat;
+
+		vec3 get_normal(vec3 p);
+	public:
+		box(vec3 c, vec3 r, material* m)
+			: _center(c), _extents(r), _mat(m)
+		{
+		}
+
+		bool hit(const ray& r, hit_record& hr) override;
+		float hit(const ray& r, float xt) override;
+
+		aabb bounds() const override
+		{
+			return aabb(_center + _extents, _center - _extents);
+		}
+
+		proprw(vec3, center, { return _center; });
+		proprw(vec3, extents, { return _extents; });
+
+
+		inline material* mat() const override { return _mat; }
+	};
 }
 

@@ -73,27 +73,21 @@ int main()
 
 	texture2d* rt = new texture2d(uvec2(640, 480));
 
-	camera cam(vec3(0, 3, -10), vec3(0), (vec2)rt->size(), 1.f);
+	camera cam(vec3(0, 5, -12), vec3(0), (vec2)rt->size(), 1.f);
 
 	sphere* s = new sphere(vec3(0), .75f, 
 		new basic_material(vec3(0.1f,.8f,0), vec3(.2f,.8f,0), 500
 		));
 
 	vector<surface*> objs;
-	/*objs.push_back(new sphere(vec3(0), .5f,
-		new basic_material(vec3(.8f, .8f, .8f), vec3(1), 500)));
-	objs.push_back(new sphere(vec3(1,0,0), .5f,
+	objs.push_back(new sphere(vec3(0,1,0), .5f,
+		new basic_material(vec3(.8f, .4f, 0), vec3(1), 500)));
+	objs.push_back(new sphere(vec3(1.2f,1,0), .5f,
 		new basic_material(vec3(.8f, 0, 0), vec3(1), 200)));
-	objs.push_back(new sphere(vec3(-1,0,0), .5f,
+	objs.push_back(new sphere(vec3(-1.2f,1,0), .5f,
 		new basic_material(vec3(0, 0, .8f), vec3(1), 50)));
-*/
 
-	auto mat = new basic_material(vec3(.8f, .4f, 0), vec3(.9f, .7f, .3f), 150);
-
-	for (float z = 0; z < 33; ++z)
-	{
-		objs.push_back(new sphere(glm::gaussRand(vec3(0), vec3(2.f)), 0.5f, mat));
-	}
+	objs.push_back(new box(vec3(0), vec3(4, .2f, 4), new basic_material(vec3(.2f), vec3(.2f), 6)));
 
 	auto vst = chrono::system_clock::now();
 	bvh_node* sc = new bvh_node(objs);
@@ -105,8 +99,10 @@ int main()
 	basic_material_renderer rd(cam, sc, rt);
 	
 	rd.lights().push_back(point_light(vec3(0, 4, 0), vec3(1)));
-	rd.lights().push_back(point_light(vec3(4, 4, -4), vec3(1)));
-	rd.lights().push_back(point_light(vec3(6, -4, -3), vec3(1)));
+	rd.lights().push_back(point_light(vec3(4, 4, -4), vec3(1,1,.7f)));
+	rd.lights().push_back(point_light(vec3(6, 4, -3), vec3(1,.7f,1)));
+
+	rd.aa_samples() = 4;
 
 	auto start_time = chrono::system_clock::now();
 	rd.render();
@@ -115,6 +111,10 @@ int main()
 	auto tms = (double)tus/1000000.0;
 	cout << "render took: " << tms << "ms" << endl;
 
+	ostringstream otxt;
+	otxt << "RENDERED IN " << tms << "MS" << endl;
+	rt->draw_text(otxt.str(), uvec2(3), vec3(.2f));
+	rt->draw_text(otxt.str(), uvec2(1), vec3(1));
 
 	ostringstream fss;
 	fss << "img" << time(nullptr) << ".bmp";
