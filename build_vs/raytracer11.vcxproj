@@ -83,12 +83,14 @@
     <ClInclude Include="..\inc\renderer.h" />
     <ClInclude Include="..\inc\surface.h" />
     <ClInclude Include="..\inc\texture.h" />
+    <ClInclude Include="..\inc\path_tracing_renderer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\basic_renderer.cpp" />
     <ClCompile Include="..\src\bvh_node.cpp" />
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\parallel_tiles_renderer.cpp" />
+    <ClCompile Include="..\src\path_tracing_renderer.cpp" />
     <ClCompile Include="..\src\renderer.cpp" />
     <ClCompile Include="..\src\surface.cpp" />
     <ClCompile Include="..\src\texture.cpp" />
