@@ -8,7 +8,7 @@
 
 namespace raytracer11
 {
-	vec3 path_tracing_material::shade(renderer* rndr, const ray& r, vec3 l, vec3 lc, const hit_record& hr, uint depth = 0)
+	vec3 path_tracing_material::shade(renderer* rndr, const ray& r, vec3 l, vec3 lc, const hit_record& hr, uint depth)
 	{
 		if (squlen(Le) > 0)
 			return Le;
@@ -26,6 +26,6 @@ namespace raytracer11
 		{
 			return hr.hit_surface->mat()->shade(this, r, vec3(), vec3(), hr, depth);
 		}
-		else return vec3(0.1f);
+		else return vec3(0.2f);
 	}
 }

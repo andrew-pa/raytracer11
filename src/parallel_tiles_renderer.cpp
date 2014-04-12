@@ -93,6 +93,7 @@ namespace raytracer11
 #ifdef WRITE_PER_THREAD_PERF_DATA
 					auto end_time = chrono::system_clock::now();
 					long tm = chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count();
+					
 					auto tmpt = (double)tm / (double)tiles_rendered;
 					cout << "thread " << this_thread::get_id() << " rendered " << tiles_rendered << " tiles"
 							<< " took " << (double)tm/1000000.0 << "ms, " << tmpt/1000000.0 << "ms/tile" << endl;

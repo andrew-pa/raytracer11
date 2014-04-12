@@ -4,7 +4,6 @@ namespace raytracer11
 {
 	bool sphere::hit(const ray& r, hit_record& hr)
 	{
-		if (!bounds().hit(r)) return false;
 		vec3 v = r.e - _c;
 		float b = -dot(v, r.d);
 		float det = (b*b) - dot(v, v) + _r*_r;

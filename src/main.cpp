@@ -9,6 +9,27 @@
 #include "bvh_node.h"
 using namespace raytracer11;
 
+struct test_mat : public path_tracing_material
+{
+	vec3 R;
+
+	test_mat(vec3 r)
+		: R(r), path_tracing_material(vec3(0)) {}
+
+	vec3 brdf(vec3 ki, vec3 ko)	override
+	{
+		return R;
+	}
+
+	vec3 random_ray(vec3 n, vec3 ki) override
+	{
+		if (linearRand(0.f, 1.f) > .8f)
+			return cone_distribution(n, .25f);
+		else
+			return cosine_distribution(n);
+	}
+};
+
 int path_main()
 {
 	srand(time(nullptr));
@@ -16,18 +37,22 @@ int path_main()
 	camera cam(vec3(0, 5, -14), vec3(0), (vec2)rt->size(), 1.f);
 
 	vector<surface*> objects;
-	objects.push_back(new box(vec3(-2, 4, 0), vec3(1.f, .05f, 1.f),
-		new emmisive_material(vec3(10))));
-	objects.push_back(new box(vec3(0, 0, 0), vec3(5, .1f, 5),
-		new diffuse_material(vec3(.8f, .8f, .8f))));
+	objects.push_back(new box(vec3(0, 4, 0), vec3(1.f, .05f, 1.f),
+		new emmisive_material(vec3(15))));
+	objects.push_back(new box(vec3(3, 1, -3), vec3(.3f, 1.f, .3f),
+		new emmisive_material(vec3(5, 2.5f, 0))));
+	objects.push_back(new box(vec3(0, 0, 0), vec3(6, .1f, 6),
+		new diffuse_material(vec3(.4f))));
 	objects.push_back(new sphere(vec3(0, 1, 0), .75f,
-		new diffuse_material(vec3(0, .8f, 0))));
+		new test_mat(vec3(.6f, .3f, .1f))));
+	objects.push_back(new sphere(vec3(-1.6f, 1.f, -1.5f), .75f,
+		new diffuse_material(vec3(.8f, 0, 0))));
 
 	bvh_node* sc = new bvh_node(objects);
 
 	path_tracing_renderer rd(cam, sc, rt);
 
-	rd.aa_samples(256);
+	rd.aa_samples(7000);
 
 #ifdef WRITE_WP_PERF_DATA
 	auto start_time = chrono::system_clock::now();

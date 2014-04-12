@@ -21,6 +21,7 @@ using namespace std;
 #include <glm/gtx/random.hpp>
 using namespace glm;
 
+
 #define proprw(t, n, gc) inline t& n() gc
 #define propr(t, n, gc) inline t n() const gc
 
@@ -139,5 +140,18 @@ namespace raytracer11
 			(sin(t2e)*se2*v) +
 			(sqrtf(1 - e2)*w);
 		return normalize(d);
+	}
+
+	inline vec3 cone_distribution(vec3 n, float r, float h = 1)
+	{
+		vec2 p = diskRand(r);
+
+		vec3 w = n;
+		vec3 u, v;
+		make_orthonormal(w, u, v);
+
+		vec3 x = p.x*u + p.y*v + h*w;
+
+		return normalize(x);
 	}
 }
