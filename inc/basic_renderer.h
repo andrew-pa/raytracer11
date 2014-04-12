@@ -18,15 +18,19 @@ namespace raytracer11
 		vec3 diffuse;
 		vec3 specular;
 		float specular_exp;
+		vec3 reflection;
+		bool is_reflective;
+		texture<vec3, uvec2, vec2>* tex;
 		
-		basic_material(vec3 d, vec3 s, float p)
-			: diffuse(d), specular(s), specular_exp(p){}
+		basic_material(vec3 d, vec3 s, float p, vec3 r = vec3(0), texture<vec3, uvec2, vec2>* tx = nullptr)
+			: diffuse(d), specular(s), specular_exp(p), reflection(r), is_reflective(r.length() > 0),
+			tex(tx){}
 
 		vec3 shade(renderer* rndr, const ray& r, vec3 l, vec3 lc, const hit_record& hr, uint depth = 0)override;
 		
 	};
 
-	class basic_material_renderer :
+	class basic_renderer :
 		public parallel_tiles_renderer
 	{
 	protected:
@@ -43,7 +47,7 @@ namespace raytracer11
 
 		vec3 raycolor(const ray& r, uint depth = 0) override;
 
-		basic_material_renderer(camera c, surface* s, texture<vec3, uvec2, vec2>* rt, uvec2 ts = uvec2(32), int numt = -1)
+		basic_renderer(camera c, surface* s, texture<vec3, uvec2, vec2>* rt, uvec2 ts = uvec2(32), int numt = -1)
 			: parallel_tiles_renderer(c, s, rt, numt, ts){}
 
 		proprw(vector<point_light>, lights, { return _lights; })

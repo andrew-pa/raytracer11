@@ -71,20 +71,21 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\inc\bvh_node.h" />
     <ClInclude Include="..\inc\camera.h" />
     <ClInclude Include="..\inc\cmmn.h" />
-    <ClInclude Include="..\inc\basic_material_renderer.h" />
+    <ClInclude Include="..\inc\basic_renderer.h" />
     <ClInclude Include="..\inc\parallel_tiles_renderer.h" />
     <ClInclude Include="..\inc\renderer.h" />
     <ClInclude Include="..\inc\surface.h" />
     <ClInclude Include="..\inc\texture.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\basic_material_renderer.cpp" />
+    <ClCompile Include="..\src\basic_renderer.cpp" />
     <ClCompile Include="..\src\bvh_node.cpp" />
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\parallel_tiles_renderer.cpp" />

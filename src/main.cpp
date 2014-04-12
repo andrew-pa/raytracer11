@@ -4,115 +4,189 @@
 #include "camera.h"
 #include "renderer.h"
 #include "parallel_tiles_renderer.h"
-#include "basic_material_renderer.h"
+#include "basic_renderer.h"
 #include "bvh_node.h"
 using namespace raytracer11;
 
-
-
-class noodle
+inline float squlen(vec3 v)
 {
-public:
-	string _name;
-	int _age;
-	noodle* _next;
+	return dot(v, v);
+}
 
-	//struct name_property_type 
-	//{
-	//	string* itd;
-	//	name_property_type(string* i)
-	//		: itd(i)
-	//	{}
+struct path_tracing_material
+	: public material
+{
+	vec3 Le;
+	path_tracing_material(vec3 e)
+		: Le(e){}
 
-	//	inline operator string()
-	//	{
-	//		return *itd;
-	//	}
-
-	//	inline string& operator =(string n)
-	//	{
-	//		*itd = n;
-	//		return *itd;
-	//	}
-	//};
-
-	//pproprw(string, name, _name);
-
-	inline property_type<string> name()
+	virtual vec3 brdf(vec3 ki, vec3 ko) = 0;
+	virtual vec3 random_ray(vec3 n, vec3 ki) = 0;
+	vec3 shade(renderer* rndr, const ray& r, vec3 l, vec3 lc, const hit_record& hr, uint depth = 0)override
 	{
-		return property_type<string>(&_name);
-	}
+		if (squlen(Le) > 0)
+			return Le;
 
-	inline property_type<noodle*> next()
-	{
-		return property_type<noodle*>(&_next);
-	}
-
-
-	struct _____age_property_type : public property_type<int>
-	{
-		_____age_property_type(int* d)
-			: property_type(d){}
-		inline int& operator =(int n) override
-		{
-			if (n < 0 || n > 125) throw exception("too old!");
-			*_data = n;
-			return *_data;
-		}
-	};
-	inline _____age_property_type age()
-	{
-		
-		return _____age_property_type(&_age);
+		vec3 v = normalize(-r.d);
+		vec3 nrd = random_ray(hr.norm, v);
+		return brdf(v, nrd) * rndr->raycolor(ray(r(hr.t) + nrd*.001f, nrd), depth + 1) * dot(hr.norm, nrd);
 	}
 };
 
-int main()
+struct emmisive_material : public path_tracing_material
+{
+	emmisive_material(vec3 e)
+		: path_tracing_material(e) {}
+
+	vec3 brdf(vec3 ki, vec3 ko)	override
+	{
+		return vec3(0);
+	}
+
+	vec3 random_ray(vec3 n, vec3 ki) override
+	{
+		return vec3(0);
+	}
+};
+
+struct diffuse_material
+	: public path_tracing_material
+{
+	vec3 R;
+
+	diffuse_material(vec3 r)
+		: R(r), path_tracing_material(vec3(0)) {}
+
+	vec3 brdf(vec3 ki, vec3 ko)	override
+	{
+		return R;
+	}
+
+	vec3 random_ray(vec3 n, vec3 ki) override
+	{
+		return cosine_distribution(n);
+	}
+};
+
+class path_tracing_renderer :
+	public parallel_tiles_renderer
+{
+public:
+	const uint max_depth = 4;
+
+	vec3 raycolor(const ray& r, uint depth = 0) override
+	{
+		if (depth > max_depth) return vec3(0);
+		hit_record hr(10000.f);
+		if(_scene->hit(r, hr))
+		{
+			return hr.hit_surface->mat()->shade(this, r, vec3(), vec3(), hr, depth);
+		}
+		else return vec3(0.1f);
+	}
+
+	path_tracing_renderer(camera c, surface* s, texture<vec3, uvec2, vec2>* rt, uvec2 ts = uvec2(32), int numt = -1)
+		: parallel_tiles_renderer(c, s, rt, numt, ts){}
+};
+
+int path_main()
+{
+	srand(time(nullptr));
+	texture2d* rt = new texture2d(uvec2(1280, 960));
+	camera cam(vec3(0, 5, -14), vec3(0), (vec2)rt->size(), 1.f);
+
+	vector<surface*> objects;
+	objects.push_back(new box(vec3(-2, 4, 0), vec3(1.f, .05f, 1.f),
+		new emmisive_material(vec3(10))));
+	objects.push_back(new box(vec3(0, 0, 0), vec3(5, .1f, 5),
+		new diffuse_material(vec3(.8f, .8f, .8f))));
+	objects.push_back(new sphere(vec3(0, 1, 0), .75f,
+		new diffuse_material(vec3(0, .8f, 0))));
+
+	bvh_node* sc = new bvh_node(objects);
+
+	path_tracing_renderer rd(cam, sc, rt);
+
+	rd.aa_samples(256);
+
+#ifdef WRITE_WP_PERF_DATA
+	auto start_time = chrono::system_clock::now();
+#endif
+	rd.render();
+#ifdef WRITE_WP_PERF_DATA
+	auto end_time = chrono::system_clock::now();
+	long tus = chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count();
+	auto tms = (double)tus / 1000000.0;
+	cout << "render took: " << tms << "ms" << endl;
+#endif
+	ostringstream otxt;
+	otxt << "RENDERED IN " << tms << "MS" << endl;
+	otxt << "SAMPLES: " << rd.aa_samples() << endl;
+	rt->draw_text(otxt.str(), uvec2(3), vec3(.2f));
+	rt->draw_text(otxt.str(), uvec2(1), vec3(1,1,0));
+
+	ostringstream fss;
+	fss << "img" << time(nullptr) << ".bmp";
+	rt->write_bmp(fss.str());
+
+	getchar();
+	return 0;
+}
+
+int basic_main()
 {
 	srand(time(nullptr));
 
-	texture2d* rt = new texture2d(uvec2(640, 480));
+	texture2d* rt = new texture2d(uvec2(1280, 960));
 
 	camera cam(vec3(0, 5, -12), vec3(0), (vec2)rt->size(), 1.f);
 
-	sphere* s = new sphere(vec3(0), .75f, 
-		new basic_material(vec3(0.1f,.8f,0), vec3(.2f,.8f,0), 500
-		));
-
 	vector<surface*> objs;
-	objs.push_back(new sphere(vec3(0,1,0), .5f,
-		new basic_material(vec3(.8f, .4f, 0), vec3(1), 500)));
-	objs.push_back(new sphere(vec3(1.2f,1,0), .5f,
+	objs.push_back(new sphere(vec3(0,1,0), .75f,
+		new basic_material(vec3(.4f, .4f, .5f), vec3(1), 700, vec3(.1f))));
+	objs.push_back(new sphere(vec3(1.8f, 3, 1.2f), .75f,
+		new basic_material(vec3(.8f, .4f, 0), vec3(1), 200)));
+	objs.push_back(new sphere(vec3(1.5f,1,-2), .5f,
 		new basic_material(vec3(.8f, 0, 0), vec3(1), 200)));
-	objs.push_back(new sphere(vec3(-1.2f,1,0), .5f,
-		new basic_material(vec3(0, 0, .8f), vec3(1), 50)));
+	objs.push_back(new sphere(vec3(-1.5f, 1, -2), .75f,
+		new basic_material(vec3(.8f), vec3(1), 50, vec3(0),
+		new checker_texture(vec3(1,1,0),vec3(0,1,0), 10.f))));
 
-	objs.push_back(new box(vec3(0), vec3(4, .2f, 4), new basic_material(vec3(.2f), vec3(.2f), 6)));
+	objs.push_back(new box(vec3(0), vec3(6, .16f, 6),
+		new basic_material(vec3(.2f), vec3(.2f), 10, vec3(0))));
 
+#ifdef WRITE_WP_PERF_DATA
 	auto vst = chrono::system_clock::now();
+#endif
 	bvh_node* sc = new bvh_node(objs);
+#ifdef WRITE_WP_PERF_DATA
 	auto vet = chrono::system_clock::now();
 	long vus = chrono::duration_cast<chrono::nanoseconds>(vet - vst).count();
 	auto vms = (double)vus/1000000.0;
 	cout << "bvh tree build took: " << vms << "ms" << endl;
+#endif
 
-	basic_material_renderer rd(cam, sc, rt);
+	basic_renderer rd(cam, sc, rt);
 	
 	rd.lights().push_back(point_light(vec3(0, 4, 0), vec3(1)));
 	rd.lights().push_back(point_light(vec3(4, 4, -4), vec3(1,1,.7f)));
-	rd.lights().push_back(point_light(vec3(6, 4, -3), vec3(1,.7f,1)));
+	rd.lights().push_back(point_light(vec3(-6, 4, -3), vec3(1,.7f,1)));
 
-	rd.aa_samples() = 4;
+	rd.aa_samples(4);
 
+#ifdef WRITE_WP_PERF_DATA
 	auto start_time = chrono::system_clock::now();
+#endif
 	rd.render();
+#ifdef WRITE_WP_PERF_DATA
 	auto end_time = chrono::system_clock::now();
 	long tus = chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count();
 	auto tms = (double)tus/1000000.0;
 	cout << "render took: " << tms << "ms" << endl;
-
+#endif
 	ostringstream otxt;
 	otxt << "RENDERED IN " << tms << "MS" << endl;
+	otxt << "SAMPLES: " << rd.aa_samples() << endl;
 	rt->draw_text(otxt.str(), uvec2(3), vec3(.2f));
 	rt->draw_text(otxt.str(), uvec2(1), vec3(1));
 
@@ -121,4 +195,10 @@ int main()
 	rt->write_bmp(fss.str());
 
 	getchar();
+	return 0;
+}
+
+int main()
+{
+	return path_main();
 }

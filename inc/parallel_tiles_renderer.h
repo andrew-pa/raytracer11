@@ -16,7 +16,7 @@ namespace raytracer11
 		uvec2 _tilesize;
 		uint _numthreads;
 		void render_tile(uvec2 pos);
-		void render_tile_aa(uvec2 pos);
+		void render_tile_aa(uvec2 pos);//
 		uint _samples;
 	public:
 		parallel_tiles_renderer(camera c, surface* s, texture<vec3, uvec2, vec2>* rt, int num_threads_ = -1, uvec2 tile_size_ = uvec2(32,32))
@@ -26,7 +26,9 @@ namespace raytracer11
 
 		void render() override;
 	
-		proprw(uint, aa_samples, { return _samples; });
+		//proprw(uint, aa_samples, { return _samples; });
+		inline uint aa_samples() { return _samples*_samples; }
+		inline void aa_samples(uint s) { _samples = sqrt(s); }
 		proprw(uvec2, tile_size, { return _tilesize; });
 		proprw(uint, number_of_threads, { return _numthreads; });
 	};

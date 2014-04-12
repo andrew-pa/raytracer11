@@ -127,8 +127,10 @@ namespace raytracer11
 		if (tmax < tmin || tmin < 0 || tmin > hr.t) return false;
 		hr.hit_surface = this;
 		hr.t = tmin;
-		hr.norm = get_normal(r(tmin));
-		hr.texcord = vec2(0);
+		vec3 p = r(tmin);
+		hr.norm = get_normal(p);
+		hr.texcord.x = p.x;
+		hr.texcord.y = p.z;
 		return true;
 	}
 

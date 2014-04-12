@@ -24,36 +24,9 @@ using namespace glm;
 #define proprw(t, n, gc) inline t& n() gc
 #define propr(t, n, gc) inline t n() const gc
 
-template <typename T>
-struct property_type
-{
-	T* _data;
-	property_type(T* x)
-		: _data(x)	{}
+#define WRITE_PER_THREAD_PERF_DATA
+#define WRITE_WP_PERF_DATA
 
-	inline virtual operator T()
-	{
-		return *_data;
-	}
-
-	inline virtual T& operator =(T n)
-	{
-		*_data = n;
-		return *_data;
-	}
-
-	inline virtual T* operator ->()
-	{
-		return _data;
-	}
-	inline virtual T& operator *()
-	{
-		return *_data;
-	}
-
-
-	virtual ~property_type() {}
-};
 
 namespace raytracer11
 {
@@ -143,5 +116,28 @@ namespace raytracer11
 		}
 	};
 
+	inline void make_orthonormal(vec3& w, vec3& u, vec3& v)
+	{
+		w = normalize(w);
+		vec3 t = fabsf(w.x) > .1f ?
+			vec3(0, 1, 0) : vec3(1, 0, 0);
+		u = normalize(cross(w, t));
+		v = cross(w, u);
+	}
 
+	inline vec3 cosine_distribution(vec3 n)
+	{
+		vec3 w = n;
+		vec3 u, v;
+		make_orthonormal(w, u, v);
+		float e1 = linearRand(0.f, 1.f);
+		float e2 = linearRand(0.f, 1.f);
+		float se2 = sqrtf(e2);
+		float t2e = pi<float>() * 2 * e1;
+		vec3 d =
+			(cos(t2e)*se2*u) +
+			(sin(t2e)*se2*v) +
+			(sqrtf(1 - e2)*w);
+		return normalize(d);
+	}
 }
