@@ -68,7 +68,8 @@ namespace raytracer11
 
 		inline vec3& texel(vec2 uv)
 		{
-			int ch = fabsf((int)(floor(uv.x*_checker_size) + floor(uv.y*_checker_size)));
+			int ch = fabsf((int)(floor(uv.x*_checker_size) 
+				+ floor(uv.y*_checker_size)));
 			return colors[ch%2];
 		}
 

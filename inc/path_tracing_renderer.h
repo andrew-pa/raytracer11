@@ -19,7 +19,7 @@ struct path_tracing_material
 	path_tracing_material(vec3 e)
 		: Le(e){}
 
-	virtual vec3 brdf(vec3 ki, vec3 ko) = 0;
+	virtual vec3 brdf(vec3 ki, vec3 ko, vec3 n) = 0;
 	virtual vec3 random_ray(vec3 n, vec3 ki) = 0;
 	vec3 shade(renderer* rndr, const ray& r, vec3 l, vec3 lc, const hit_record& hr, uint depth = 0)override;
 };
@@ -29,7 +29,7 @@ struct emmisive_material : public path_tracing_material
 	emmisive_material(vec3 e)
 		: path_tracing_material(e) {}
 
-	vec3 brdf(vec3 ki, vec3 ko)	override
+	vec3 brdf(vec3 ki, vec3 ko, vec3)	override
 	{
 		return vec3(0);
 	}
@@ -48,7 +48,7 @@ struct diffuse_material
 	diffuse_material(vec3 r)
 		: R(r), path_tracing_material(vec3(0)) {}
 
-	vec3 brdf(vec3 ki, vec3 ko)	override
+	vec3 brdf(vec3 ki, vec3 ko,vec3)	override
 	{
 		return R;
 	}

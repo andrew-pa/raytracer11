@@ -15,7 +15,7 @@ namespace raytracer11
 
 		vec3 v = normalize(-r.d);
 		vec3 nrd = random_ray(hr.norm, v);
-		return brdf(v, nrd) * rndr->raycolor(ray(r(hr.t) + nrd*.001f, nrd), depth + 1) * dot(hr.norm, nrd);
+		return brdf(v, nrd, hr.norm) * rndr->raycolor(ray(r(hr.t) + nrd*.001f, nrd), depth + 1) * dot(hr.norm, nrd);
 	}
 
 	vec3 path_tracing_renderer::raycolor(const ray& r, uint depth) 

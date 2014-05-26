@@ -494,7 +494,31 @@ namespace raytracer11
 				"....."
 				"....."
 				"xx..."
-				"xx...";
+				"xx..."; 
+			(*chars)['-'] =
+				"....."
+				"....."
+				"....."
+				"xxxxx"
+				"....."
+				"....."
+				".....";
+			(*chars)['['] =
+				"xxxxx"
+				"x...."
+				"x...."
+				"x...."
+				"x...."
+				"x...."
+				"xxxxx";
+			(*chars)[']'] =
+				"xxxxx"
+				"....x"
+				"....x"
+				"....x"
+				"....x"
+				"....x"
+				"xxxxx";
 #pragma endregion
 		}
 		uvec2 texpos = pos;

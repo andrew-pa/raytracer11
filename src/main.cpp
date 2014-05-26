@@ -9,14 +9,17 @@
 #include "bvh_node.h"
 using namespace raytracer11;
 
+
 struct test_mat : public path_tracing_material
 {
 	vec3 R;
+	float percent_cone;
+	float cone_radius;
 
-	test_mat(vec3 r)
-		: R(r), path_tracing_material(vec3(0)) {}
+	test_mat(vec3 r, float pc = .8f, float cr = .2f)
+		: R(r), percent_cone(.8f), cone_radius(cr), path_tracing_material(vec3(0)) {}
 
-	vec3 brdf(vec3 ki, vec3 ko)	override
+	vec3 brdf(vec3 ki, vec3 ko, vec3)	override
 	{
 		return R;
 	}
@@ -24,14 +27,122 @@ struct test_mat : public path_tracing_material
 	vec3 random_ray(vec3 n, vec3 ki) override
 	{
 		if (linearRand(0.f, 1.f) > .8f)
-			return cone_distribution(n, .25f);
+			return cone_distribution(n, .16f);
 		else
 			return cosine_distribution(n);
 	}
 };
 
+vec3 schlick(vec3 c, float dkih)
+{
+	return c + (vec3(1) - c)*pow(1 - (dkih), 5);
+}
+
+struct rlm_mat : public path_tracing_material
+{
+	vec3 Rd;
+	vec3 Rs;
+	vec2 n;
+
+	rlm_mat(vec3 rd, vec3 rs, vec2 _n = vec2(100,100))
+		: Rd(rd), Rs(rs), n(_n), path_tracing_material(vec3(0)) {}
+
+	vec3 brdf(vec3 ki, vec3 ko, vec3 n)	override
+	{
+		float cof = glm::sqrt((n.x + 1.f) * (n.y + 1.f)) / (8.f * pi<float>());
+		vec3 h = normalize(ki + ko);
+		vec3 u = vec3(0);
+		vec3 v = vec3(0);
+		float num = (n.x*(dot(h, u)*dot(h, u))) + (n.y*(dot(h, v)*dot(h, v))) / (1-(dot(h,n)*dot(h,n)));
+		float dom = dot(h, ki) * glm::max(dot(n, ki), dot(n, ko));
+		vec3 spc = cof * dot(n, h) * (num / dom) * schlick(Rs, dot(ki, h));
+		return spc+Rd;
+	}
+
+	inline float cos2(float x) { return cos(x)*cos(x); }
+	inline float sin2(float x) { return sin(x)*sin(x); }
+	vec3 make_h(vec3 n)
+	{
+		float e1 = float(std::rand()) / float(RAND_MAX);
+		float e2 = float(std::rand()) / float(RAND_MAX);
+		float phi = atan(glm::sqrt((n.x + 1) / (n.y + 1)) * tan((pi<float>()*e1) / 2));
+		float theta = acos(pow(1 - e2, 1 / (n.x*cos2(phi) + n.y*sin2(phi + 1))));
+
+		if (std::rand() % 10 > 5) phi = -phi;
+		if (std::rand() % 10 > 5) theta = -theta;
+		
+		vec3 w = n;
+		vec3 u, v;
+		make_orthonormal(w, u, v);
+
+		float x = sin(theta)*cos(phi);
+		float y = sin(theta)*sin(phi);
+		float z = cos(theta);
+		return normalize(u * x + v * y + w * z);
+	}
+
+	vec3 random_ray(vec3 n, vec3 ki) override
+	{
+		vec3 h = make_h(n);
+		vec3 f = h / (4.f * (ki * h));
+		return f;
+	}
+};
+//
+//template <typename T>
+//struct prop
+//{
+//	typedef T type;
+//	
+//	prop(T* x)
+//		: _d(x){}
+//
+//	T* _d;
+//	
+//	inline operator T&()
+//	{
+//		return *_d;
+//	}
+//
+//	inline prop<T>& operator =(const T& x)
+//	{
+//		*_d = x;
+//		return *this;
+//	}
+//
+//	inline T& operator --()
+//	{
+//		return *_d;
+//	}
+//};
+//
+//class noodle
+//{
+//	string* _name;
+//	vec2 _len;
+//public:
+//	noodle(string& n, vec2 l)
+//		: _name(&n), _len(l) { }
+//
+//	inline prop<string*> name()
+//	{
+//		return prop<string*>(&_name);
+//	}
+//
+//	inline prop<vec2> length() { return prop<vec2>(&_len); }
+//};
+
 int path_main()
 {
+	//noodle n(string("bob"), vec2(20));
+	//noodle x(string("joe"), vec2(25));
+	//n.name() = new string("noo");
+	//string* ffa = n.name();
+	//auto s = n.name()--->size();
+
+	//auto l = n.length()-- + vec2(1);
+	//n.length()--.length();
+
 	srand(time(nullptr));
 	texture2d* rt = new texture2d(uvec2(1280, 960));
 	camera cam(vec3(0, 5, -14), vec3(0), (vec2)rt->size(), 1.f);
@@ -39,7 +150,7 @@ int path_main()
 	vector<surface*> objects;
 	objects.push_back(new box(vec3(0, 4, 0), vec3(1.f, .05f, 1.f),
 		new emmisive_material(vec3(15))));
-	objects.push_back(new box(vec3(3, 1, -3), vec3(.3f, 1.f, .3f),
+	objects.push_back(new sphere(vec3(1.5f, 1, -1.6f), .3f,
 		new emmisive_material(vec3(5, 2.5f, 0))));
 	objects.push_back(new box(vec3(0, 0, 0), vec3(6, .1f, 6),
 		new diffuse_material(vec3(.4f))));
@@ -48,11 +159,14 @@ int path_main()
 	objects.push_back(new sphere(vec3(-1.6f, 1.f, -1.5f), .75f,
 		new diffuse_material(vec3(.8f, 0, 0))));
 
+	//objects.push_back(new sphere(vec3(3.f, 1.f, -2.3f), .75f,
+	//	new rlm_mat(vec3(0.f, 5.f, 1.f), vec3(.8f), vec2(100000))));
+
 	bvh_node* sc = new bvh_node(objects);
 
-	path_tracing_renderer rd(cam, sc, rt);
+	path_tracing_renderer rd(cam, sc, rt, vec2(64));
 
-	rd.aa_samples(7000);
+	rd.aa_samples(80);
 
 #ifdef WRITE_WP_PERF_DATA
 	auto start_time = chrono::system_clock::now();
@@ -60,19 +174,21 @@ int path_main()
 	rd.render();
 #ifdef WRITE_WP_PERF_DATA
 	auto end_time = chrono::system_clock::now();
-	long tus = chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count();
+	long tus = abs(chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count());
 	auto tms = (double)tus / 1000000.0;
 	cout << "render took: " << tms << "ms" << endl;
 #endif
 	ostringstream otxt;
 	otxt << "RENDERED IN " << tms << "MS" << endl;
 	otxt << "SAMPLES: " << rd.aa_samples() << endl;
+	otxt << "TILE SIZE: [" << rd.tile_size().x << ", " << rd.tile_size().y << "]" << endl;
 	rt->draw_text(otxt.str(), uvec2(3), vec3(.2f));
 	rt->draw_text(otxt.str(), uvec2(1), vec3(1,1,0));
 
 	ostringstream fss;
 	fss << "img" << time(nullptr) << ".bmp";
 	rt->write_bmp(fss.str());
+
 
 	getchar();
 	return 0;
