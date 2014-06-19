@@ -10,7 +10,7 @@ namespace raytracer11
 		aabb _bounds;
 	public:
 		bvh_node(surface* l, surface* r)
-			: _left(l), _right(r), _bounds(l->bounds(), r->bounds()){}
+			: _left(l), _right(r), _bounds(l->bounds(), r->bounds()) {}
 
 		bvh_node(vector<surface*>& objects, uint axi = 0);
 
@@ -21,6 +21,7 @@ namespace raytracer11
 
 		proprw(surface*, left, { return _left; });
 		proprw(surface*, right, { return _right; });
+
 
 		~bvh_node()
 		{

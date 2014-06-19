@@ -7,8 +7,8 @@
 #include "basic_renderer.h"
 #include "path_tracing_renderer.h"
 #include "bvh_node.h"
+#include "triangle_mesh.h"
 using namespace raytracer11;
-
 
 struct test_mat : public path_tracing_material
 {
@@ -130,7 +130,7 @@ struct rlm_mat : public path_tracing_material
 //	}
 //
 //	inline prop<vec2> length() { return prop<vec2>(&_len); }
-//};
+//
 
 int path_main()
 {
@@ -159,14 +159,25 @@ int path_main()
 	objects.push_back(new sphere(vec3(-1.6f, 1.f, -1.5f), .75f,
 		new diffuse_material(vec3(.8f, 0, 0))));
 
+	/*vector<triangle_mesh<bvh_node>::vertex> v;
+	vector<uint> i;
+	v.push_back(triangle_mesh<bvh_node>::vertex(vec3(0, 0, 0), vec3(0, 0.5, -1), vec2(0, 0)));
+	v.push_back(triangle_mesh<bvh_node>::vertex(vec3(10, 0, 0), vec3(0, 0.5, -1), vec2(1, 0)));
+	v.push_back(triangle_mesh<bvh_node>::vertex(vec3(0, 0, 10), vec3(0, 0.5, -1), vec2(0, 1)));
+	v.push_back(triangle_mesh<bvh_node>::vertex(vec3(10, 0, 10), vec3(0, 0.5, -1), vec2(1, 1)));
+	i.push_back(0); i.push_back(1); i.push_back(2);
+	i.push_back(1); i.push_back(2); i.push_back(3);
+	triangle_mesh<bvh_node>* t = new triangle_mesh<bvh_node>(v, i, new diffuse_material(vec3(0,0,.6f)));
+	objects.push_back(t);*/
+
 	//objects.push_back(new sphere(vec3(3.f, 1.f, -2.3f), .75f,
 	//	new rlm_mat(vec3(0.f, 5.f, 1.f), vec3(.8f), vec2(100000))));
 
 	bvh_node* sc = new bvh_node(objects);
 
-	path_tracing_renderer rd(cam, sc, rt, vec2(64));
+	path_tracing_renderer rd(cam, sc, rt, vec2(32));
 
-	rd.aa_samples(80);
+	rd.aa_samples(1000);
 
 #ifdef WRITE_WP_PERF_DATA
 	auto start_time = chrono::system_clock::now();
@@ -174,7 +185,8 @@ int path_main()
 	rd.render();
 #ifdef WRITE_WP_PERF_DATA
 	auto end_time = chrono::system_clock::now();
-	long tus = abs(chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count());
+	
+	long long tus = (chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count());
 	auto tms = (double)tus / 1000000.0;
 	cout << "render took: " << tms << "ms" << endl;
 #endif
@@ -188,7 +200,6 @@ int path_main()
 	ostringstream fss;
 	fss << "img" << time(nullptr) << ".bmp";
 	rt->write_bmp(fss.str());
-
 
 	getchar();
 	return 0;
@@ -242,7 +253,7 @@ int basic_main()
 #ifdef WRITE_WP_PERF_DATA
 	auto end_time = chrono::system_clock::now();
 	long tus = chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count();
-	auto tms = (double)tus/1000000.0;
+	auto tms = tus/1000000.0;
 	cout << "render took: " << tms << "ms" << endl;
 #endif
 	ostringstream otxt;

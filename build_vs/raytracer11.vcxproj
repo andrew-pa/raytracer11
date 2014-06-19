@@ -84,6 +84,7 @@
     <ClInclude Include="..\inc\surface.h" />
     <ClInclude Include="..\inc\texture.h" />
     <ClInclude Include="..\inc\path_tracing_renderer.h" />
+    <ClInclude Include="..\inc\triangle_mesh.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\basic_renderer.cpp" />

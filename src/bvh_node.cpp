@@ -34,8 +34,24 @@ namespace raytracer11
 			auto right_half = vector<surface*>(objects.begin() + half, objects.end());
 			//optomize case where left node should only be a pntr to a primitive because left_half.size() == 1
 			
-			_left = new bvh_node(left_half, (axi + 1) % 3);
-			_right = new bvh_node(right_half, (axi + 1) % 3);
+			if(left_half.size() == 1)
+			{
+				_left = left_half[0];
+			}
+			else
+			{			
+				_left = new bvh_node(left_half, (axi + 1) % 3);
+			}
+			
+			if (right_half.size() == 1)
+			{
+				_right = right_half[0];
+			}
+			else
+			{
+				_right = new bvh_node(right_half, (axi + 1) % 3);
+			}
+
 			_bounds = aabb(_left->bounds(), _right->bounds());
 		}
 	}
