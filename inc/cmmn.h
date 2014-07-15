@@ -28,6 +28,8 @@ using namespace glm;
 #define WRITE_PER_THREAD_PERF_DATA
 #define WRITE_WP_PERF_DATA
 
+//#define implements(current_class, interface) const int IMPLEMENT_CHECK_##interface = INTERFACE_##interface##<current_class>();
+
 
 namespace raytracer11
 {
@@ -87,6 +89,21 @@ namespace raytracer11
 			return false;
 		}
 
+		inline bool inside_of(const aabb& b)
+		{
+			return b.contains(vec3(_min.x, _min.y, _min.z)) ||
+
+				b.contains(vec3(_max.x, _min.y, _min.z)) || 
+				b.contains(vec3(_min.x, _max.y, _min.z)) || 
+				b.contains(vec3(_min.x, _min.y, _max.z)) || 
+
+				b.contains(vec3(_min.x, _max.y, _max.z)) || 
+				b.contains(vec3(_max.x, _min.y, _max.z)) || 
+				b.contains(vec3(_max.x, _max.y, _min.z)) || 
+
+				b.contains(vec3(_max.x, _max.y, _max.z));
+		}
+
 		inline aabb transform(const mat4& m) const
 		{
 			vec3 min, max;
@@ -134,9 +151,37 @@ namespace raytracer11
 			return tmax >= tmin;
 		}
 
+		inline pair<float,float> hit_retint(const ray& r) const
+		{
+			vec3 rrd = 1.f / r.d;
+
+			vec3 t1 = (_min - r.e) * rrd;
+			vec3 t2 = (_max - r.e) * rrd;
+
+			vec3 m12 = glm::min(t1, t2);
+			vec3 x12 = glm::max(t1, t2);
+
+			float tmin = m12.x;
+			tmin = glm::max(tmin, m12.y);
+			tmin = glm::max(tmin, m12.z);
+
+			float tmax = x12.x;
+			tmax = glm::min(tmax, x12.y);
+			tmax = glm::min(tmax, x12.z);
+
+
+			return pair<float,float>(tmin, tmax);
+		}
+
 		inline vec3 center()
 		{
 			return (_min + _max) * 1.f/2.f;
+		}
+
+		inline void add_aabb(const aabb& b)
+		{
+			add_point(b._min);
+			add_point(b._max);
 		}
 	};
 

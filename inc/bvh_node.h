@@ -3,6 +3,7 @@
 
 namespace raytracer11
 {
+
 	class bvh_node :
 		public surface
 	{
@@ -30,6 +31,8 @@ namespace raytracer11
 			delete _right;
 			_right = nullptr;
 		}
+
+		//implements(bvh_node, accl_struct)
 	};
 }
 

@@ -8,6 +8,7 @@
 #include "path_tracing_renderer.h"
 #include "bvh_node.h"
 #include "triangle_mesh.h"
+#include "grid.h"
 using namespace raytracer11;
 
 struct test_mat : public path_tracing_material
@@ -88,7 +89,7 @@ struct rlm_mat : public path_tracing_material
 		return f;
 	}
 };
-//
+
 //template <typename T>
 //struct prop
 //{
@@ -110,7 +111,7 @@ struct rlm_mat : public path_tracing_material
 //		return *this;
 //	}
 //
-//	inline T& operator --()
+//	inline T& operator --() const
 //	{
 //		return *_d;
 //	}
@@ -124,13 +125,15 @@ struct rlm_mat : public path_tracing_material
 //	noodle(string& n, vec2 l)
 //		: _name(&n), _len(l) { }
 //
+//	const prop<string*> namex = prop<string*>(&_name);
+//
 //	inline prop<string*> name()
 //	{
 //		return prop<string*>(&_name);
 //	}
 //
 //	inline prop<vec2> length() { return prop<vec2>(&_len); }
-//
+//}
 
 int path_main()
 {
@@ -139,6 +142,8 @@ int path_main()
 	//n.name() = new string("noo");
 	//string* ffa = n.name();
 	//auto s = n.name()--->size();
+	//s = n.namex--->size();
+	//n.namex-- = new string("boo");
 
 	//auto l = n.length()-- + vec2(1);
 	//n.length()--.length();
@@ -149,15 +154,19 @@ int path_main()
 
 	vector<surface*> objects;
 	objects.push_back(new box(vec3(0, 4, 0), vec3(1.f, .05f, 1.f),
-		new emmisive_material(vec3(15))));
+		new emmisive_material(vec3(13))));
 	objects.push_back(new sphere(vec3(1.5f, 1, -1.6f), .3f,
 		new emmisive_material(vec3(5, 2.5f, 0))));
-	objects.push_back(new box(vec3(0, 0, 0), vec3(6, .1f, 6),
+	objects.push_back(new box(vec3(0, -1.5f, 0), vec3(6, .1f, 6),
 		new diffuse_material(vec3(.4f))));
 	objects.push_back(new sphere(vec3(0, 1, 0), .75f,
 		new test_mat(vec3(.6f, .3f, .1f))));
 	objects.push_back(new sphere(vec3(-1.6f, 1.f, -1.5f), .75f,
 		new diffuse_material(vec3(.8f, 0, 0))));
+
+	//triangle_mesh<bvh_node>* t = new triangle_mesh<bvh_node>("teapot.obj",
+	//	new diffuse_material(vec3(.1f, .2f, .6f)));
+	//objects.push_back(t);
 
 	/*vector<triangle_mesh<bvh_node>::vertex> v;
 	vector<uint> i;
@@ -173,11 +182,13 @@ int path_main()
 	//objects.push_back(new sphere(vec3(3.f, 1.f, -2.3f), .75f,
 	//	new rlm_mat(vec3(0.f, 5.f, 1.f), vec3(.8f), vec2(100000))));
 
-	bvh_node* sc = new bvh_node(objects);
+	//bvh_node* sc = new bvh_node(objects);
+	//group* sc = new group(objects);
+	grid<8, 8, 8>* sc = new grid<8,8,8>(objects);
 
 	path_tracing_renderer rd(cam, sc, rt, vec2(32));
 
-	rd.aa_samples(1000);
+	rd.aa_samples(400);
 
 #ifdef WRITE_WP_PERF_DATA
 	auto start_time = chrono::system_clock::now();
@@ -230,7 +241,7 @@ int basic_main()
 #ifdef WRITE_WP_PERF_DATA
 	auto vst = chrono::system_clock::now();
 #endif
-	bvh_node* sc = new bvh_node(objs);
+	bvh_node* sc = new bvh_node(objs, 3);
 #ifdef WRITE_WP_PERF_DATA
 	auto vet = chrono::system_clock::now();
 	long vus = chrono::duration_cast<chrono::nanoseconds>(vet - vst).count();

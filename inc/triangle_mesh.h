@@ -5,6 +5,7 @@
 
 namespace raytracer11 
 {
+
 	template <typename accl_struct>
 	class triangle_mesh : public surface
 	{
@@ -16,7 +17,16 @@ namespace raytracer11
 			vertex() {}
 			vertex(vec3 p, vec3 n, vec2 t)
 				: pos(p), norm(n), texc(t){}
+			
+			bool equals(const vertex& b)
+			{
+				return pos.x == b.pos.x && pos.y == b.pos.y && pos.z == b.pos.z &&
+					norm.x == b.norm.x && norm.y == b.norm.y && norm.z == b.norm.z &&
+					texc.x == b.texc.x && texc.y == b.texc.y;
+			}
 		};
+
+		
 	protected:
 		accl_struct* _acs;
 		mat4 _world;
@@ -25,6 +35,13 @@ namespace raytracer11
 		vector<vertex> _vertices;
 
 		material* m;
+
+		vec3 readvec3(ifstream& i)
+		{
+			float x, y, z;
+			i >> x >> y >> z;
+			return vec3(x, y, z);
+		}
 	public:
 		class triangle : public surface
 		{
@@ -49,6 +66,8 @@ namespace raytracer11
 			inline aabb bounds() const override { return _b; }
 			//inline vec3 center() const override { return _cntr; }
 			inline material* mat() const { return _mesh->m; }
+
+			inline bool inside_of(const aabb& b) const override { return b.contains(_mesh->_vertices[i[0]].pos) || b.contains(_mesh->_vertices[i[1]].pos) || b.contains(_mesh->_vertices[i[1]].pos); }
 		
 			inline bool hit(const ray& r, hit_record& hr) override
 			{
@@ -133,7 +152,76 @@ namespace raytracer11
 		triangle_mesh(const string& from_obj_file, material* _m, const mat4& w = mat4(1))
 			 : _world(w), _invworld(inverse(w)), m(_m)
 		{
+			vector<vec3> poss;
+			vector<vec3> norms;
+			vector<vec2> texcords;
+			vector<uint> indices;
 
+			ifstream inf(from_obj_file);
+			char comm[256] = { 0 };
+
+			while (inf)
+			{
+				inf >> comm;
+				if (!inf) break;
+				if (strcmp(comm, "#") == 0) continue;
+				else if (strcmp(comm, "v") == 0)
+					poss.push_back(readvec3(inf));
+				else if (strcmp(comm, "vn") == 0)
+					norms.push_back(readvec3(inf));
+				else if (strcmp(comm, "vt") == 0)
+				{
+					float u, v;
+					inf >> u >> v;
+					texcords.push_back(vec2(u, v));
+				}
+				else if (strcmp(comm, "f") == 0)
+				{
+					for (uint ifa = 0; ifa < 3; ++ifa)
+					{
+						vertex v;
+						uint ip, in, it;
+						inf >> ip;
+						v.pos = poss[ip - 1];
+						if ('/' == inf.peek())
+						{
+							inf.ignore();
+							if ('/' != inf.peek())
+							{
+								inf >> it;
+								v.texc = texcords[it - 1];
+							}
+							if ('/' == inf.peek())
+							{
+								inf.ignore();
+								inf >> in;
+								v.norm = norms[in - 1];
+							}
+						}
+
+						auto iv = find_if(_vertices.begin(), _vertices.end(), 
+							[&](const vertex& a) { return v.equals(a); });
+						if (iv == _vertices.end())
+						{
+							indices.push_back(_vertices.size());
+							_vertices.push_back(v);
+						}
+						else
+						{
+							indices.push_back(std::distance(_vertices.begin(), iv));
+						}
+					}
+				}
+			}
+			aabb bnds;
+			vector<surface*> ts;
+			for (auto iv = _vertices.begin(); iv != _vertices.end(); ++iv)
+				bnds.add_point(iv->pos);
+			for (uint ix = 0; ix < indices.size(); ix += 3)
+			{
+				ts.push_back(new triangle(indices[ix], indices[ix + 1], indices[ix + 2], this));
+			}
+			_acs = new accl_struct(ts);
 		}
 
 		~triangle_mesh()
