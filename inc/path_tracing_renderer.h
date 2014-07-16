@@ -20,6 +20,7 @@ struct path_tracing_material
 		: Le(e){}
 
 	virtual vec3 brdf(vec3 ki, vec3 ko, vec3 n) = 0;
+	virtual float pdf(vec3 ki,vec3 n) = 0;
 	virtual vec3 random_ray(vec3 n, vec3 ki) = 0;
 	vec3 shade(renderer* rndr, const ray& r, vec3 l, vec3 lc, const hit_record& hr, uint depth = 0)override;
 };
@@ -32,6 +33,11 @@ struct emmisive_material : public path_tracing_material
 	vec3 brdf(vec3 ki, vec3 ko, vec3)	override
 	{
 		return vec3(0);
+	}
+
+	float pdf(vec3,vec3) override
+	{
+		return 0.f;
 	}
 
 	vec3 random_ray(vec3 n, vec3 ki) override
@@ -48,9 +54,14 @@ struct diffuse_material
 	diffuse_material(vec3 r)
 		: R(r), path_tracing_material(vec3(0)) {}
 
-	vec3 brdf(vec3 ki, vec3 ko,vec3)	override
+	vec3 brdf(vec3 ki, vec3 ko, vec3)	override
 	{
 		return R;
+	}
+
+	float pdf(vec3 ki, vec3 n) override
+	{
+		return dot(ki, n) / pi<float>();
 	}
 
 	vec3 random_ray(vec3 n, vec3 ki) override

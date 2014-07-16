@@ -14,6 +14,7 @@
 #include <chrono>
 using namespace std;
 
+#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/io.hpp>
@@ -93,13 +94,13 @@ namespace raytracer11
 		{
 			return b.contains(vec3(_min.x, _min.y, _min.z)) ||
 
-				b.contains(vec3(_max.x, _min.y, _min.z)) || 
-				b.contains(vec3(_min.x, _max.y, _min.z)) || 
-				b.contains(vec3(_min.x, _min.y, _max.z)) || 
+				b.contains(vec3(_max.x, _min.y, _min.z)) ||
+				b.contains(vec3(_min.x, _max.y, _min.z)) ||
+				b.contains(vec3(_min.x, _min.y, _max.z)) ||
 
-				b.contains(vec3(_min.x, _max.y, _max.z)) || 
-				b.contains(vec3(_max.x, _min.y, _max.z)) || 
-				b.contains(vec3(_max.x, _max.y, _min.z)) || 
+				b.contains(vec3(_min.x, _max.y, _max.z)) ||
+				b.contains(vec3(_max.x, _min.y, _max.z)) ||
+				b.contains(vec3(_max.x, _max.y, _min.z)) ||
 
 				b.contains(vec3(_max.x, _max.y, _max.z));
 		}
@@ -130,9 +131,9 @@ namespace raytracer11
 		inline bool hit(const ray& r) const
 		{
 			if (contains(r.e)) return true;
-			
+
 			vec3 rrd = 1.f / r.d;
-			
+
 			vec3 t1 = (_min - r.e) * rrd;
 			vec3 t2 = (_max - r.e) * rrd;
 
@@ -222,4 +223,13 @@ namespace raytracer11
 
 		return normalize(x);
 	}
+
+	class rexception : public std::exception
+	{
+		string msg;
+	public:
+		rexception(const string& m)
+			: msg(m) {}
+		const char* what() const noexcept override { return msg.c_str(); }
+	};
 }

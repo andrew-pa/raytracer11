@@ -68,7 +68,7 @@ namespace raytracer11
 
 		inline vec3& texel(vec2 uv)
 		{
-			int ch = fabsf((int)(floor(uv.x*_checker_size) 
+			int ch = fabsf((int)(floor(uv.x*_checker_size)
 				+ floor(uv.y*_checker_size)));
 			return colors[ch%2];
 		}
@@ -76,7 +76,7 @@ namespace raytracer11
 		propr(uvec2, size, override{ return uvec2(64, 64); });
 	};
 
-	class noise_texture : public texture<vec3, uvec2, vec2>
+	/*class noise_texture : public texture<vec3, uvec2, vec2>
 	{
 		vec2 _ns;
 		vec3 _c;
@@ -104,11 +104,10 @@ namespace raytracer11
 				p = fabsf(p);
 			else
 				p = .8f * (p - 1);
-			return _c*p;
+			return p*_c;
 
 		}
 
 		propr(uvec2, size, override{ return uvec2(64, 64); });
-	};
+	};*/
 }
-

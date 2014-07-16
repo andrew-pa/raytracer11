@@ -12,10 +12,14 @@ namespace raytracer11
 		unsigned char * data;
 
 		FILE * file;
+		#ifdef _MSVC_
 		fopen_s(&file, bmp_filename.c_str(), "rb");
-		if (!file) throw new exception((string("couldn't open file ") + bmp_filename).c_str());
+		#else
+		file = fopen(bmp_filename.c_str(), "rb");
+		#endif
+		if (!file) throw rexception((string("couldn't open file ") + bmp_filename));
 		if (fread(header, 1, 54, file) != 54)
-			throw new exception("invalid BMP header");
+			throw rexception("invalid BMP header");
 
 		//// A BMP files always begins with "BM"
 
@@ -140,8 +144,11 @@ namespace raytracer11
 	{
 		FILE *f;
 		if (y < 0 || x < 0) return 0;
+		#ifdef _MSVC_
 		fopen_s(&f, filename, "wb");
-		//f = fopen(filename, "wb");
+		#else
+		f = fopen(filename, "wb");
+		#endif
 		if (f) {
 			va_list v;
 			va_start(v, fmt);
@@ -494,7 +501,7 @@ namespace raytracer11
 				"....."
 				"....."
 				"xx..."
-				"xx..."; 
+				"xx...";
 			(*chars)['-'] =
 				"....."
 				"....."

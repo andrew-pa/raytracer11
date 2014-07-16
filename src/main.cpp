@@ -25,6 +25,11 @@ struct test_mat : public path_tracing_material
 		return R;
 	}
 
+	float pdf(vec3 ki, vec3 n)
+	{
+		return 1.f;
+	}
+
 	vec3 random_ray(vec3 n, vec3 ki) override
 	{
 		if (linearRand(0.f, 1.f) > .8f)
@@ -36,7 +41,7 @@ struct test_mat : public path_tracing_material
 
 vec3 schlick(vec3 c, float dkih)
 {
-	return c + (vec3(1) - c)*pow(1 - (dkih), 5);
+	return c + (vec3(1.f) - c)*pow(1.f - (dkih), 5.f);
 }
 
 struct rlm_mat : public path_tracing_material
@@ -71,7 +76,7 @@ struct rlm_mat : public path_tracing_material
 
 		if (std::rand() % 10 > 5) phi = -phi;
 		if (std::rand() % 10 > 5) theta = -theta;
-		
+
 		vec3 w = n;
 		vec3 u, v;
 		make_orthonormal(w, u, v);
@@ -94,12 +99,12 @@ struct rlm_mat : public path_tracing_material
 //struct prop
 //{
 //	typedef T type;
-//	
+//
 //	prop(T* x)
 //		: _d(x){}
 //
 //	T* _d;
-//	
+//
 //	inline operator T&()
 //	{
 //		return *_d;
@@ -149,20 +154,20 @@ int path_main()
 	//n.length()--.length();
 
 	srand(time(nullptr));
-	texture2d* rt = new texture2d(uvec2(1280, 960));
+	texture2d* rt = new texture2d(uvec2(128, 96));
 	camera cam(vec3(0, 5, -14), vec3(0), (vec2)rt->size(), 1.f);
 
 	vector<surface*> objects;
 	objects.push_back(new box(vec3(0, 4, 0), vec3(1.f, .05f, 1.f),
-		new emmisive_material(vec3(13))));
-	objects.push_back(new sphere(vec3(1.5f, 1, -1.6f), .3f,
-		new emmisive_material(vec3(5, 2.5f, 0))));
-	objects.push_back(new box(vec3(0, -1.5f, 0), vec3(6, .1f, 6),
-		new diffuse_material(vec3(.4f))));
+		new emmisive_material(vec3(5))));
+	objects.push_back(new sphere(vec3(1.5f, 1, -1.6f), .2f,
+		new emmisive_material(vec3(8, 4.f, 0))));
+	objects.push_back(new box(vec3(0, -.5f, 0), vec3(6, .1f, 6),
+		new diffuse_material(vec3(.3f))));
 	objects.push_back(new sphere(vec3(0, 1, 0), .75f,
 		new test_mat(vec3(.6f, .3f, .1f))));
 	objects.push_back(new sphere(vec3(-1.6f, 1.f, -1.5f), .75f,
-		new diffuse_material(vec3(.8f, 0, 0))));
+		new diffuse_material(vec3(.3f, 0, 0))));
 
 	//triangle_mesh<bvh_node>* t = new triangle_mesh<bvh_node>("teapot.obj",
 	//	new diffuse_material(vec3(.1f, .2f, .6f)));
@@ -182,13 +187,15 @@ int path_main()
 	//objects.push_back(new sphere(vec3(3.f, 1.f, -2.3f), .75f,
 	//	new rlm_mat(vec3(0.f, 5.f, 1.f), vec3(.8f), vec2(100000))));
 
-	//bvh_node* sc = new bvh_node(objects);
+	bvh_node* sc = new bvh_node(objects);
 	//group* sc = new group(objects);
-	grid<8, 8, 8>* sc = new grid<8,8,8>(objects);
+	//grid<8, 8, 8>* sc = new grid<8,8,8>(objects);
 
 	path_tracing_renderer rd(cam, sc, rt, vec2(32));
 
-	rd.aa_samples(400);
+	rd.aa_samples(60000);
+  
+  cout << "render starting: [AA: " << rd.aa_samples() << ", tile size: " << rd.tile_size() << ", object count: " << objects.size() << "]" << endl;
 
 #ifdef WRITE_WP_PERF_DATA
 	auto start_time = chrono::system_clock::now();
@@ -196,7 +203,7 @@ int path_main()
 	rd.render();
 #ifdef WRITE_WP_PERF_DATA
 	auto end_time = chrono::system_clock::now();
-	
+
 	long long tus = (chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count());
 	auto tms = (double)tus / 1000000.0;
 	cout << "render took: " << tms << "ms" << endl;
@@ -250,7 +257,7 @@ int basic_main()
 #endif
 
 	basic_renderer rd(cam, sc, rt);
-	
+
 	rd.lights().push_back(point_light(vec3(0, 4, 0), vec3(1)));
 	rd.lights().push_back(point_light(vec3(4, 4, -4), vec3(1,1,.7f)));
 	rd.lights().push_back(point_light(vec3(-6, 4, -3), vec3(1,.7f,1)));

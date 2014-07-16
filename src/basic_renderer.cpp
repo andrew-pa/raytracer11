@@ -1,4 +1,3 @@
-#pragma once
 #include "basic_renderer.h"
 
 #ifndef p3
