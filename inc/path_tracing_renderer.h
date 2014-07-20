@@ -19,8 +19,8 @@ struct path_tracing_material
 	path_tracing_material(vec3 e)
 		: Le(e){}
 
-	virtual vec3 brdf(vec3 ki, vec3 ko, vec3 n) = 0;
-	virtual float pdf(vec3 ki,vec3 n) = 0;
+	virtual vec3 brdf(vec3 ki, vec3 ko, const hit_record& hr) = 0;
+	virtual float pdf(vec3 ki, vec3 ko, vec3 n) = 0;
 	virtual vec3 random_ray(vec3 n, vec3 ki) = 0;
 	vec3 shade(renderer* rndr, const ray& r, vec3 l, vec3 lc, const hit_record& hr, uint depth = 0)override;
 };
@@ -30,12 +30,12 @@ struct emmisive_material : public path_tracing_material
 	emmisive_material(vec3 e)
 		: path_tracing_material(e) {}
 
-	vec3 brdf(vec3 ki, vec3 ko, vec3)	override
+	vec3 brdf(vec3 ki, vec3 ko, const hit_record&)	override
 	{
 		return vec3(0);
 	}
 
-	float pdf(vec3,vec3) override
+	float pdf(vec3,vec3,vec3) override
 	{
 		return 0.f;
 	}
@@ -54,12 +54,12 @@ struct diffuse_material
 	diffuse_material(vec3 r)
 		: R(r), path_tracing_material(vec3(0)) {}
 
-	vec3 brdf(vec3 ki, vec3 ko, vec3)	override
+	vec3 brdf(vec3 ki, vec3 ko, const hit_record&)	override
 	{
 		return R;
 	}
 
-	float pdf(vec3 ki, vec3 n) override
+	float pdf(vec3 ki, vec3, vec3 n) override
 	{
 		return dot(ki, n) / pi<float>();
 	}
@@ -68,6 +68,30 @@ struct diffuse_material
 	{
 		return cosine_distribution(n);
 	}
+};
+
+struct diffuse_tex_material : public path_tracing_material
+{
+  texture<vec3, uvec2, vec2>* tex;
+  vec3 R;
+  
+  diffuse_tex_material(texture<vec3, uvec2, vec2>* t, vec3 R_)
+  :tex(t), path_tracing_material(vec3(0)), R(R_){}
+  
+  vec3 brdf(vec3 ki, vec3 ko, const hit_record& hr) override
+  {
+  return tex->texel(hr.texcord)*R;
+  }
+
+  float pdf(vec3 ki, vec3, vec3 n) override
+  {
+    return dot(ki, n) / pi<float>();
+  }
+
+  vec3 random_ray(vec3 n, vec3 ki) override
+  {
+    return cosine_distribution(n);
+  }
 };
 
 class path_tracing_renderer :

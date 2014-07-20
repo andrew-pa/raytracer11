@@ -32,7 +32,7 @@ namespace raytracer11
 
 		inline ray generate_ray(vec2 xy) const
 		{
-			vec2 uv = (xy - (screen_size / vec2(2.f))) / (screen_size*2.f);
+			vec2 uv = (xy - (screen_size * .5f)) / (screen_size*2.f);
 			uv.y *= -1;
 			vec3 rd = normalize(w*look + uv.x*right + uv.y*up);
 			return ray(pos, rd);
