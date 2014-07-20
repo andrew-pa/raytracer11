@@ -224,12 +224,17 @@ namespace raytracer11
 		return normalize(x);
 	}
 
+#ifdef _MSC_VER
+#define NOEXCEPT throw()
+#else
+#define NOEXCEPT noexcept
+#endif
 	class rexception : public std::exception
 	{
 		string msg;
 	public:
 		rexception(const string& m)
 			: msg(m) {}
-		const char* what() const noexcept override { return msg.c_str(); }
+		const char* what() const NOEXCEPT override { return msg.c_str(); }
 	};
 }

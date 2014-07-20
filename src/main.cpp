@@ -154,7 +154,7 @@ int path_main()
 	//n.length()--.length();
 
 	srand(time(nullptr));
-	texture2d* rt = new texture2d(uvec2(128, 96));
+	texture2d* rt = new texture2d(uvec2(640, 480));
 	camera cam(vec3(0, 5, -14), vec3(0), (vec2)rt->size(), 1.f);
 
 	vector<surface*> objects;
@@ -193,7 +193,7 @@ int path_main()
 
 	path_tracing_renderer rd(cam, sc, rt, vec2(32));
 
-	rd.aa_samples(60000);
+	rd.aa_samples(600);
   
   cout << "render starting: [AA: " << rd.aa_samples() << ", tile size: " << rd.tile_size() << ", object count: " << objects.size() << "]" << endl;
 
