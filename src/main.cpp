@@ -55,29 +55,29 @@ struct rlm_mat : public path_tracing_material
 
 	vec3 brdf(vec3 ki, vec3 ko, const hit_record& hr)	override
 	{
-    vec3 n = hr.norm;
+		vec3 n = hr.norm;
 		float cof = glm::sqrt((n.x + 1.f) * (n.y + 1.f)) / (8.f * pi<float>());
 		vec3 h = normalize(ki + ko);
 		vec3 u = vec3(0);
 		vec3 v = vec3(0);
-    make_orthonormal(n, u, v);
+		make_orthonormal(n, u, v);
 		float num = (n.x*(dot(h, u)*dot(h, u))) + (n.y*(dot(h, v)*dot(h, v))) / (1-(dot(h,n)*dot(h,n)));
 		float dom = dot(h, ki) * glm::max(dot(n, ki), dot(n, ko));
 		vec3 spc = cof * pow(dot(n, h), (num / dom)) * schlick(Rs, dot(ki, h));
 		return spc+Rd;
 	}
 
-  float pdf(vec3 ki, vec3 ko, vec3 n)
-  {
-    vec3 h = normalize(ki + ko);
+	float pdf(vec3 ki, vec3 ko, vec3 n)
+	{
+		vec3 h = normalize(ki + ko);
 		vec3 u = vec3(0);
 		vec3 v = vec3(0);
-    make_orthonormal(n, u, v);
-    float num = (n.x*(dot(h, u)*dot(h, u))) + (n.y*(dot(h, v)*dot(h, v))) / (1-(dot(h,n)*dot(h,n)));
-    float cof = glm::sqrt((n.x + 1.f) * (n.y + 1.f)) / (2.f * pi<float>());
-    float ph = cof*pow(dot(n, h),num);
-    return ph / (4.f*dot(ki,h));
-  }
+		make_orthonormal(n, u, v);
+		float num = (n.x*(dot(h, u)*dot(h, u))) + (n.y*(dot(h, v)*dot(h, v))) / (1-(dot(h,n)*dot(h,n)));
+		float cof = glm::sqrt((n.x + 1.f) * (n.y + 1.f)) / (2.f * pi<float>());
+		float ph = cof*pow(dot(n, h),num);
+		return ph / (4.f*dot(ki,h));
+	}
 
 	inline float cos2(float x) { return cos(x)*cos(x); }
 	inline float sin2(float x) { return sin(x)*sin(x); }
@@ -104,8 +104,8 @@ struct rlm_mat : public path_tracing_material
 	vec3 random_ray(vec3 n, vec3 ki) override
 	{
 		vec3 h = make_h(n);
-		vec3 f = h / (4.f * (ki * h));
-		return f;
+		
+		return h;
 	}
 };
 
@@ -174,14 +174,14 @@ int path_main()
 	vector<surface*> objects;
 	objects.push_back(new box(vec3(0, 4, 0), vec3(1.f, .05f, 1.f),
 		new emmisive_material(vec3(5))));
-	objects.push_back(new sphere(vec3(1.5f, 1, -1.6f), .2f,
-		new emmisive_material(vec3(8, 4.f, 0))));
+	//objects.push_back(new sphere(vec3(1.5f, 1, -1.6f), .2f,
+	//	new emmisive_material(vec3(8, 4.f, 0))));
 	objects.push_back(new box(vec3(0, 0.f, 0), vec3(6, .1f, 6),
 		new diffuse_material(vec3(.3f))));
-	objects.push_back(new sphere(vec3(0, 1, 0), .75f,
-		new test_mat(vec3(.6f, .3f, .1f))));
-	objects.push_back(new sphere(vec3(-2.2f, 1.f, 4.f), .75f,
-		new diffuse_material(vec3(.3f, 0, 0))));
+	//objects.push_back(new sphere(vec3(0, 1, 0), .75f,
+	//	new test_mat(vec3(.6f, .3f, .1f))));
+	//objects.push_back(new sphere(vec3(-2.2f, 1.f, 4.f), .75f,
+	//	new diffuse_material(vec3(.3f, 0, 0))));
 	objects.push_back(new sphere(vec3(-1.6f, 1.f, -1.5f), .8f,
                                new rlm_mat(vec3(0.,.5,1.), vec3(.2, .4, .5)) ));
 
@@ -209,7 +209,7 @@ int path_main()
 
 	path_tracing_renderer rd(cam, sc, rt, vec2(32));
 
-	rd.aa_samples(600);
+	rd.aa_samples(60);
   
   cout << "render starting: [AA: " << rd.aa_samples() << ", tile size: " << rd.tile_size() << ", object count: " << objects.size() << "]" << endl;
 
