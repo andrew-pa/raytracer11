@@ -2,7 +2,7 @@
 #include "cmmn.h"
 #include "surface.h"
 #include "bvh_node.h"
-
+#include <cstring>
 namespace raytracer11 
 {
 

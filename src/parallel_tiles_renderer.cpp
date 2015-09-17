@@ -71,7 +71,7 @@ namespace raytracer11
 		{
 			if(_samples == 0)
 			{			
-				threads.push_back(thread([&] {
+				threads.push_back(thread(function<void()>([&] {
 					bool notdone = true;
 #ifdef WRITE_PER_THREAD_PERF_DATA
 					auto start_time = chrono::system_clock::now();
@@ -98,11 +98,11 @@ namespace raytracer11
 					cout << "thread " << this_thread::get_id() << " rendered " << tiles_rendered << " tiles"
 							<< " took " << (double)tm/1000000.0 << "ms, " << tmpt/1000000.0 << "ms/tile" << endl;
 #endif
-				}));
+				})));
 			}
 			else
 			{
-				threads.push_back(thread([&] {
+				threads.push_back(thread(function<void()>([&] {
 					bool notdone = true;
 #ifdef WRITE_PER_THREAD_PERF_DATA
 					auto start_time = chrono::system_clock::now();
@@ -128,7 +128,7 @@ namespace raytracer11
 					cout << "thread " << this_thread::get_id() << " rendered " << tiles_rendered << " tiles"
 						<< " took " << (double)tm / 1000000.0 << "ms, " << tmpt / 1000000.0 << "ms/tile" << endl;
 #endif
-				}));
+				})));
 			}
 		}
 

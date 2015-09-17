@@ -18,15 +18,15 @@ using namespace std;
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/io.hpp>
-#include <glm/gtx/noise.hpp>
-#include <glm/gtx/random.hpp>
+#include <glm/gtc/noise.hpp>
+#include <glm/gtc/random.hpp>
 using namespace glm;
 
 
 #define proprw(t, n, gc) inline t& n() gc
 #define propr(t, n, gc) inline t n() const gc
 
-#define WRITE_PER_THREAD_PERF_DATA
+//#define WRITE_PER_THREAD_PERF_DATA
 #define WRITE_WP_PERF_DATA
 
 //#define implements(current_class, interface) const int IMPLEMENT_CHECK_##interface = INTERFACE_##interface##<current_class>();

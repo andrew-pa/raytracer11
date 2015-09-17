@@ -166,11 +166,11 @@ int path_main()
 
 	//auto l = n.length()-- + vec2(1);
 	//n.length()--.length();
-
+	
 	srand(time(nullptr));
 	texture2d* rt = new texture2d(uvec2(640, 480));
 	camera cam(vec3(0, 5, -14)/*vec3(2, 3, 8)*/, vec3(0), (vec2)rt->size(), 1.f);
-
+	
 	vector<surface*> objects;
 	objects.push_back(new box(vec3(0, 4, 0), vec3(1.f, .05f, 1.f),
 		new emmisive_material(vec3(5))));
@@ -178,12 +178,12 @@ int path_main()
 	//	new emmisive_material(vec3(8, 4.f, 0))));
 	objects.push_back(new box(vec3(0, 0.f, 0), vec3(6, .1f, 6),
 		new diffuse_material(vec3(.3f))));
-	//objects.push_back(new sphere(vec3(0, 1, 0), .75f,
-	//	new test_mat(vec3(.6f, .3f, .1f))));
-	//objects.push_back(new sphere(vec3(-2.2f, 1.f, 4.f), .75f,
-	//	new diffuse_material(vec3(.3f, 0, 0))));
-	objects.push_back(new sphere(vec3(-1.6f, 1.f, -1.5f), .8f,
-                               new rlm_mat(vec3(0.,.5,1.), vec3(.2, .4, .5)) ));
+	objects.push_back(new sphere(vec3(0, 1, 0), .75f,
+		new test_mat(vec3(.6f, .3f, .1f))));
+	objects.push_back(new sphere(vec3(-2.2f, 1.f, 4.f), .75f,
+		new diffuse_material(vec3(.3f, 0, 0))));
+	//objects.push_back(new sphere(vec3(-1.6f, 1.f, -1.5f), .8f,
+          //                     new rlm_mat(vec3(0.,.5,1.), vec3(.2, .4, .5)) ));
 
 	//triangle_mesh<bvh_node>* t = new triangle_mesh<bvh_node>("teapot.obj",
 	//	new diffuse_material(vec3(.1f, .2f, .6f)));
@@ -235,7 +235,7 @@ int path_main()
 	fss << "img" << time(nullptr) << ".bmp";
 	rt->write_bmp(fss.str());
 
-	getchar();
+	//getchar();
 	return 0;
 }
 
@@ -304,7 +304,9 @@ int basic_main()
 	return 0;
 }
 
-int main()
+int main(int argc, char* argv[])
 {
-	return path_main();
+	vector<string> args;
+	for(int i = 1; i < argc; ++i) args.push_back(argv[i]);
+	return scene_path_main(args);
 }
