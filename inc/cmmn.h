@@ -18,8 +18,8 @@ using namespace std;
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/io.hpp>
-#include <glm/gtx/noise.hpp>
-#include <glm/gtx/random.hpp>
+#include <glm/gtc/noise.hpp>
+#include <glm/gtc/random.hpp>
 using namespace glm;
 
 
