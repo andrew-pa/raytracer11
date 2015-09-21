@@ -5,7 +5,6 @@
 #include "surface.h"
 #include "texture.h"
 
-#define MINGW
 #ifndef MINGW
 #include <thread>
 #include <mutex>
@@ -65,7 +64,7 @@ namespace raytracer11
 		{}
 
 		void render() override;
-	
+
 		//proprw(uint, aa_samples, { return _samples; });
 		inline uint aa_samples() { return _samples*_samples; }
 		inline void aa_samples(uint s) { _samples = sqrt(s); }
@@ -74,4 +73,3 @@ namespace raytracer11
 	};
 
 }
-

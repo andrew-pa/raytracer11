@@ -43,8 +43,10 @@ int main(int argc, char* argv[]) {
 	picojson::parse(vscenej, scenefi, istream_iterator<char>(),  &err);
 	if(!err.empty()) {
 		cerr << "Scene parse error: " << err << endl;
+
 	}
 	auto scenej = vscenej.get<picojson::value::object>();
+
 
 	texture2d* rdt = new texture2d(uvec2(loadv2(scenej["resolution"])));
 	
@@ -52,6 +54,8 @@ int main(int argc, char* argv[]) {
 	
 	auto camj = scenej["camera"].get<picojson::value::object>();
 	camera cam(loadv3(camj["position"]), loadv3(camj["target"]), (vec2)rdt->size(), 1.f);
+
+
 
 	vector<surface*> objects;
 	for(const auto& vobjj : scenej["objects"].get<picojson::value::array>()) {
@@ -74,6 +78,9 @@ int main(int argc, char* argv[]) {
 	path_tracing_renderer rd(cam, sc, rdt, tilesize); 
 	
 	rd.aa_samples(scenej["samples"].get<double>());
+
+	cout << "render starting: [AA: " << rd.aa_samples() << ", tile size: " << rd.tile_size() << ", object count: " << objects.size() << "]" << endl;
+
 
 	#ifdef WRITE_WP_PERF_DATA
 	auto start_time = chrono::system_clock::now();
