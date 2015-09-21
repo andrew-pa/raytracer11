@@ -1,0 +1,17 @@
+{ 
+	"resolution" : [640, 480],
+	"antialiasc" : 64,
+	"camera" : {
+		"position" : [0, 2, 5],
+		"target"   : [0, 0, 0],
+		"upvec"	   : [0, 1, 0]
+	},
+	"objects": [
+		{ 
+			"type":"sphere", 
+			"center":[0, 0, 0], 
+			"radius":3, 
+			"material": { "type":"diffuse", "color":[0.8, 0.4, 0.2] } 
+		} 
+	]
+}
