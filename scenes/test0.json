@@ -1,17 +1,28 @@
 { 
 	"resolution" : [640, 480],
-	"antialiasc" : 64,
+	"samples" : 64,
 	"camera" : {
-		"position" : [0, 2, 5],
-		"target"   : [0, 0, 0],
-		"upvec"	   : [0, 1, 0]
+		"position" : [0, 4, 8],
+		"target"   : [0, 0, 0]
 	},
 	"objects": [
 		{ 
 			"type":"sphere", 
 			"center":[0, 0, 0], 
-			"radius":3, 
+			"radius":1, 
 			"material": { "type":"diffuse", "color":[0.8, 0.4, 0.2] } 
-		} 
+		},
+		{ 
+			"type":"box",
+			"center":[0, -2, 0],
+			"extent":[2, 1, 0],
+			"material": { "type":"diffuse", "color":[0.8, 0.8, 0.8] }
+		},
+		{ 
+			"type":"box",
+			"center":[0, 2, 0],
+			"extent":[1, 0.1, 1],
+			"material": { "type":"emission", "color":[1, 1, 1] } 
+		}
 	]
 }
