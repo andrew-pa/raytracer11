@@ -28,6 +28,6 @@ namespace raytracer11
 		{
 			return hr.hit_surface->mat()->shade(this, r, vec3(), vec3(), hr, depth);
 		}
-		else return vec3(0.2f);
+		else return vec3(0.0f);
 	}
 }

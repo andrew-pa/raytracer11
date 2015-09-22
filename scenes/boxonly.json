@@ -8,18 +8,6 @@
 	},
 	"objects": [
 		{
-			"type":"sphere",
-			"center":[-1.2, 0, 0],
-			"radius":1,
-			"material": { "type":"diffuse", "color":[0.6, 0.3, 0.1] }
-		},
-		{
-			"type":"sphere",
-			"center":[1.2, 0, 0],
-			"radius":1,
-			"material": { "type":"diffuse", "color":[0.1, 0.3, 0.6] }
-		},
-		{
 			"type":"box",
 			"center":[0, -1.2, 0],
 			"extent":[4, 0.2, 4],

@@ -304,9 +304,10 @@ int basic_main()
 	return 0;
 }
 
-int main(int argc, char* argv[])
+int oldmain(int argc, char* argv[])
 {
 	vector<string> args;
 	for(int i = 1; i < argc; ++i) args.push_back(argv[i]);
-	return scene_path_main(args);
+//	return scene_path_main(args);
+	return 0;
 }

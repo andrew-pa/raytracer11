@@ -36,7 +36,24 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 
-	ifstream scenef(args[0]);
+	uint samples_override = 0;
+	uvec2 res_override = uvec2(0);
+
+	string scene_filename = args[0];
+
+	if (args.size() > 1) {
+		for (uint i = 1; i < args.size(); ++i) {
+			if (args[i] == "-s") {
+				samples_override = atoi(args[++i].c_str());
+			}
+			else if (args[i] == "-r") {
+				res_override.x = atoi(args[++i].c_str());
+				res_override.y = atoi(args[++i].c_str());
+			}
+		}
+	}
+
+	ifstream scenef(scene_filename);
 	picojson::value vscenej;
 	string err;
 	istream_iterator<char> scenefi{scenef};
@@ -48,9 +65,9 @@ int main(int argc, char* argv[]) {
 	auto scenej = vscenej.get<picojson::value::object>();
 
 
-	texture2d* rdt = new texture2d(uvec2(loadv2(scenej["resolution"])));
+	texture2d* rdt = new texture2d(res_override.x > 0 ? res_override : uvec2(loadv2(scenej["resolution"])));
 	
-	cout << "Rendering " << args[0] << " @ [" << rdt->size().x << ", " << rdt->size().y << "]" << endl; 
+	cout << "Rendering " << scene_filename << " @ [" << rdt->size().x << ", " << rdt->size().y << "]" << endl; 
 	
 	auto camj = scenej["camera"].get<picojson::value::object>();
 	camera cam(loadv3(camj["position"]), loadv3(camj["target"]), (vec2)rdt->size(), 1.f);
@@ -61,11 +78,17 @@ int main(int argc, char* argv[]) {
 	for(const auto& vobjj : scenej["objects"].get<picojson::value::array>()) {
 		auto objj = vobjj.get<picojson::value::object>();
 		auto type = objj["type"].get<string>();
+		auto mat = load_material(objj["material"]);
 		if(type == "sphere") {
-			objects.push_back(new sphere(loadv3(objj["center"]), objj["radius"].get<double>(), 
-				load_material(objj["material"])));
+			objects.push_back(new sphere(loadv3(objj["center"]), objj["radius"].get<double>(), mat));
 		} else if(type == "box") {
-			objects.push_back(new box(loadv3(objj["center"]), loadv3(objj["extent"]), load_material(objj["material"])));
+			objects.push_back(new box(loadv3(objj["center"]), loadv3(objj["extent"]), mat));
+		} else if (type == "mesh") {
+			mat4 w = mat4(1);
+			if (objj["scale"].is<picojson::array>()) w = scale(w, loadv3(objj["scale"]));
+			if (objj["rotation-axis"].is<picojson::array>()) w = rotate(w, (float)objj["rotation-angle"].get<double>(), loadv3(objj["rotation-axis"]));
+			if (objj["position"].is<picojson::array>()) w = translate(w, loadv3(objj["position"]));
+			objects.push_back(new triangle_mesh<bvh_node>(objj["path"].get<string>(), mat, w));
 		}
 
 	}
@@ -77,7 +100,8 @@ int main(int argc, char* argv[]) {
 
 	path_tracing_renderer rd(cam, sc, rdt, tilesize); 
 	
-	rd.aa_samples(scenej["samples"].get<double>());
+	rd.aa_samples(samples_override > 0 ? samples_override : 
+			scenej["samples"].is<double>() ? scenej["samples"].get<double>() : 64);
 
 	cout << "render starting: [AA: " << rd.aa_samples() << ", tile size: " << rd.tile_size() << ", object count: " << objects.size() << "]" << endl;
 
@@ -95,9 +119,9 @@ int main(int argc, char* argv[]) {
 
 	if(!scenej["watermark"].is<picojson::null>() && scenej["watermark"].get<bool>()) {
 		ostringstream otxt;
-		otxt << "RENDERED " << args[0] << " IN " << tms << "MS" << endl;
-		otxt << "TILE [" << rd.tile_size().x << ", " << rd.tile_size().y << "] @ " << rd.aa_samples() << " SAMPLES" << endl;
-		rdt->draw_text(otxt.str(), uvec2(3), vec3(.2f));
+		otxt << "RENDERED " << scene_filename << " IN " << tms << "MS" << endl;
+		otxt << "TILE SIZE [" << rd.tile_size().x << ", " << rd.tile_size().y << "] @ " << rd.aa_samples() << " SAMPLES" << endl;
+		rdt->draw_text(otxt.str(), uvec2(4), vec3(.2f));
 		rdt->draw_text(otxt.str(), uvec2(1), vec3(1.f, 1.f, 0.f));
 	}
 	ostringstream fss;

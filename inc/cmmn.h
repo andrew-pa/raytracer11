@@ -12,6 +12,7 @@
 #include <exception>
 #include <algorithm>
 #include <chrono>
+#include <random>
 using namespace std;
 
 #define GLM_FORCE_RADIANS
@@ -26,7 +27,7 @@ using namespace glm;
 #define proprw(t, n, gc) inline t& n() gc
 #define propr(t, n, gc) inline t n() const gc
 
-//#define WRITE_PER_THREAD_PERF_DATA
+#define WRITE_PER_THREAD_PERF_DATA
 #define WRITE_WP_PERF_DATA
 
 //#define implements(current_class, interface) const int IMPLEMENT_CHECK_##interface = INTERFACE_##interface##<current_class>();
@@ -200,8 +201,15 @@ namespace raytracer11
 		vec3 w = n;
 		vec3 u, v;
 		make_orthonormal(w, u, v);
+
+#ifdef CRANDOM
 		float e1 = linearRand(0.f, 1.f);
 		float e2 = linearRand(0.f, 1.f);
+#else 
+		default_random_engine dre;
+		dre();
+		float e1 = 0.f, e2 = 0.f;
+#endif
 		float se2 = sqrtf(e2);
 		float t2e = pi<float>() * 2 * e1;
 		vec3 d =
