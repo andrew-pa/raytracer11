@@ -18,6 +18,13 @@ vec3 loadv3(const picojson::value& v) {
 	return vec3(ar[0].get<double>(), ar[1].get<double>(), ar[2].get<double>());
 }
 
+color_property load_color(const picojson::value& v) {
+	if (v.is<picojson::array>()) return loadv3(v);
+	else if(v.is<picojson::object> {
+
+	}
+}
+
 material* load_material(const picojson::value& v) {
 	auto mj = v.get<picojson::value::object>();
 	if(mj["type"].get<string>() == "diffuse") {

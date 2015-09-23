@@ -196,6 +196,7 @@ namespace raytracer11
 		v = cross(w, u);
 	}
 
+#define CRANDOM
 	inline vec3 cosine_distribution(vec3 n)
 	{
 		vec3 w = n;

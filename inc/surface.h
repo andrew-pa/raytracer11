@@ -11,12 +11,12 @@ namespace raytracer11
 		surface* hit_surface;
 		float t;
 		vec3 norm;
-		vec2 texcord;
+		vec2 texcoord;
 		hit_record(surface* s, float _t, vec3 n, vec2 t)
-			: hit_surface(s), t(_t), norm(n), texcord(t)
+			: hit_surface(s), t(_t), norm(n), texcoord(t)
 		{}
 		hit_record(float _t)
-			: hit_surface(nullptr), t(_t), norm(vec3(0)), texcord(vec2(0))
+			: hit_surface(nullptr), t(_t), norm(vec3(0)), texcoord(vec2(0))
 		{}
 	};
 

@@ -10,13 +10,13 @@ namespace raytracer11
 {
 	vec3 path_tracing_material::shade(renderer* rndr, const ray& r, vec3 l, vec3 lc, const hit_record& hr, uint depth)
 	{
-		if (squlen(Le) > 0)
-			return Le;
+		if (squlen(Le(hr)) > 0)
+			return Le(hr);
 
 		vec3 v = normalize(-r.d);
 		vec3 nrd = random_ray(hr.norm, v);
-    float pk = pdf(nrd, v, hr.norm);
-    if(pk <= 0.f) return vec3(0.f);
+		float pk = pdf(nrd, v, hr.norm);
+		if(pk <= 0.f) return vec3(0.f);
 		return (brdf(nrd, v, hr) * rndr->raycolor(ray(r(hr.t) + nrd*.001f, nrd), depth + 1) * dot(hr.norm, nrd))/pk;
 	}
 
