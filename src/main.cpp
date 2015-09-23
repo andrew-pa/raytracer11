@@ -20,15 +20,22 @@ vec3 loadv3(const picojson::value& v) {
 
 color_property load_color(const picojson::value& v) {
 	if (v.is<picojson::array>()) return loadv3(v);
-	else if(v.is<picojson::object> {
-
+	else if(v.is<picojson::object>()) {
+		auto ov = v.get<picojson::object>();
+		auto ty = ov["type"].get<string>();
+		if(ty == "checker") {
+			return color_property(new checker_texture(loadv3(ov["color0"]), loadv3(ov["color1"]), 
+				(float)ov["size"].get<double>()));
+		} else if(ty == "bmp") {
+			return color_property(new texture2d(ov["path"].get<string>()));
+		}
 	}
 }
 
 material* load_material(const picojson::value& v) {
 	auto mj = v.get<picojson::value::object>();
 	if(mj["type"].get<string>() == "diffuse") {
-		return new diffuse_material(loadv3(mj["color"]));
+		return new diffuse_material(load_color(mj["color"]));
 	} else if(mj["type"].get<string>() == "emission") {
 		return new emmisive_material(loadv3(mj["color"]));
 	}
@@ -99,7 +106,6 @@ int main(int argc, char* argv[]) {
 		}
 
 	}
-
 	bvh_node* sc = new bvh_node(objects);
 	
 	vec2 tilesize = vec2(32);

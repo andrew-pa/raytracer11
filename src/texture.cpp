@@ -23,20 +23,21 @@ namespace raytracer11
 
 		//// A BMP files always begins with "BM"
 
-		//if (header[0] != 'B' || header[1] != 'M')
-		//	err("invalid BMP file");
+		if (header[0] != 'B' || header[1] != 'M')
+			throw rexception("invalid BMP file");
 
 		//// Make sure this is a 24bpp file
 
-		//if (*(int*)&(header[0x1E]) != 0)         { printf("Not a correct BMP file\n");    return 0; }
-
-		//if (*(int*)&(header[0x1C]) != 24)         { printf("Not a correct BMP file\n");    return 0; }
+		if (*(int*)&(header[0x1E]) != 0)          throw rexception("Not a correct BMP file\n"); 
+		if (*(int*)&(header[0x1C]) != 24)         throw rexception("Not a correct BMP file\n");
 
 		dataPos = *(int*)&(header[0x0A]);
 		imageSize = *(int*)&(header[0x22]);
 		width = *(int*)&(header[0x12]);
 		height = *(int*)&(header[0x16]);
 		_size = uvec2(width, height);
+		
+		cout << "Loading image " << bmp_filename << " size: " << width << " x " << height << endl;
 
 		if (imageSize == 0)    imageSize = width*height * 3;
 		if (dataPos == 0)      dataPos = 54;
@@ -46,7 +47,6 @@ namespace raytracer11
 		fclose(file);
 
 		_pixels = new vec3[imageSize / 3];
-
 
 		int j = 0;
 		for (int i = imageSize; i > 0; i-=3)

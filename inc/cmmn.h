@@ -27,7 +27,7 @@ using namespace glm;
 #define proprw(t, n, gc) inline t& n() gc
 #define propr(t, n, gc) inline t n() const gc
 
-#define WRITE_PER_THREAD_PERF_DATA
+//#define WRITE_PER_THREAD_PERF_DATA
 #define WRITE_WP_PERF_DATA
 
 //#define implements(current_class, interface) const int IMPLEMENT_CHECK_##interface = INTERFACE_##interface##<current_class>();
