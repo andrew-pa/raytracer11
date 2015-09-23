@@ -1,6 +1,6 @@
 {
 	"resolution" : [640, 480],
-	"samples" : 256,
+	"samples" : 16,
 	"watermark": true,
 	"camera" : {
 		"position" : [0, 3, 12],

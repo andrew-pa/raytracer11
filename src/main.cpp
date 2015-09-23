@@ -37,7 +37,7 @@ material* load_material(const picojson::value& v) {
 	if(mj["type"].get<string>() == "diffuse") {
 		return new diffuse_material(load_color(mj["color"]));
 	} else if(mj["type"].get<string>() == "emission") {
-		return new emmisive_material(loadv3(mj["color"]));
+		return new emmisive_material(load_color(mj["color"]));
 	}
 }
 

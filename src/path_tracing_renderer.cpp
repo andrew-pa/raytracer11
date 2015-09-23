@@ -14,10 +14,11 @@ namespace raytracer11
 			return Le(hr);
 
 		vec3 v = normalize(-r.d);
-		vec3 nrd = random_ray(hr.norm, v);
-		float pk = pdf(nrd, v, hr.norm);
+		float pk = 0.f;
+		vec3 nrd = random_ray(hr.norm, v, &pk);
 		if(pk <= 0.f) return vec3(0.f);
-		return (brdf(nrd, v, hr) * rndr->raycolor(ray(r(hr.t) + nrd*.001f, nrd), depth + 1) * dot(hr.norm, nrd))/pk;
+		return (brdf(nrd, v, hr) * 
+				rndr->raycolor(ray(r(hr.t) + nrd*.001f, nrd), depth + 1) * glm::max(0.f,dot(hr.norm, nrd))) / pk;
 	}
 
 	vec3 path_tracing_renderer::raycolor(const ray& r, uint depth)

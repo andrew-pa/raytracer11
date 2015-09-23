@@ -38,8 +38,8 @@ struct path_tracing_material
 		: Le(e){}
 
 	virtual vec3 brdf(vec3 ki, vec3 ko, const hit_record& hr) = 0;
-	virtual float pdf(vec3 ki, vec3 ko, vec3 n) = 0;
-	virtual vec3 random_ray(vec3 n, vec3 ki) = 0;
+	//virtual float pdf(vec3 ki, vec3 ko, vec3 n) = 0;
+	virtual vec3 random_ray(vec3 n, vec3 ki, float* pdf) = 0;
 	vec3 shade(renderer* rndr, const ray& r, vec3 l, vec3 lc, const hit_record& hr, uint depth = 0)override;
 };
 
@@ -53,13 +53,9 @@ struct emmisive_material : public path_tracing_material
 		return vec3(0);
 	}
 
-	float pdf(vec3,vec3,vec3) override
+	vec3 random_ray(vec3 n, vec3 ki, float* pdf) override
 	{
-		return 0.f;
-	}
-
-	vec3 random_ray(vec3 n, vec3 ki) override
-	{
+		if(pdf) *pdf = 0;
 		return vec3(0);
 	}
 };
@@ -77,13 +73,29 @@ struct diffuse_material
 		return R(hr);
 	}
 
-	float pdf(vec3 ki, vec3, vec3 n) override
+	vec3 random_ray(vec3 n, vec3 ki, float* pdf) override
 	{
-		return dot(ki, n) / pi<float>();
+		if(pdf) *pdf = dot(ki, n) / pi<float>();
+		return cosine_distribution(n);
+	}
+};
+
+struct shiny_material : public path_tracing_material
+{
+	color_property R;
+	float shininess;
+
+	shiny_material(color_property r, float sh)
+		: R(r), shininess(sh), path_tracing_material(vec3(0)) {}
+
+	vec3 brdf(vec3 ki, vec3 ko, const hit_record& hr)	override
+	{
+		return R(hr) + pow(dot(ki,ko),shininess);
 	}
 
-	vec3 random_ray(vec3 n, vec3 ki) override
+	vec3 random_ray(vec3 n, vec3 ki, float* pdf) override
 	{
+		if (pdf) *pdf = dot(ki, n) / pi<float>();
 		return cosine_distribution(n);
 	}
 };

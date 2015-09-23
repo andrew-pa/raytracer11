@@ -25,17 +25,16 @@ struct test_mat : public path_tracing_material
 		return R;
 	}
 
-	float pdf(vec3 ki, vec3, vec3 n)
+	vec3 random_ray(vec3 n, vec3 ki, float* pdf) override
 	{
-		return 1.f;
-	}
-
-	vec3 random_ray(vec3 n, vec3 ki) override
-	{
-		if (linearRand(0.f, 1.f) > .8f)
+		if (linearRand(0.f, 1.f) > .8f) {
+			if (pdf) *pdf = .2f;
 			return cone_distribution(n, .16f);
-		else
+		}
+		else {
+			if (pdf) *pdf = .8f;
 			return cosine_distribution(n);
+		}
 	}
 };
 
@@ -101,10 +100,10 @@ struct rlm_mat : public path_tracing_material
 		return normalize(u * x + v * y + w * z);
 	}
 
-	vec3 random_ray(vec3 n, vec3 ki) override
+	vec3 random_ray(vec3 n, vec3 ki, float* pdf) override
 	{
 		vec3 h = make_h(n);
-		
+		if(pdf) *pdf = this->pdf(ki, h, n);
 		return h;
 	}
 };

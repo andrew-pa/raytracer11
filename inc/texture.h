@@ -31,7 +31,9 @@ namespace raytracer11
 
 		inline vec3& texel(vec2 c) override
 		{
-			c = clamp(c, vec2(0, 0), vec2(1, 1));
+			//c = clamp(c, vec2(0, 0), vec2(1, 1));
+			c = mod(c, vec2(1.f));
+			
 			uvec2 ic = floor(c*(vec2)_size);
 			if(ic.x == _size.x) ic.x--;
 			if(ic.y == _size.y) ic.y--;

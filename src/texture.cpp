@@ -37,7 +37,6 @@ namespace raytracer11
 		height = *(int*)&(header[0x16]);
 		_size = uvec2(width, height);
 		
-		cout << "Loading image " << bmp_filename << " size: " << width << " x " << height << endl;
 
 		if (imageSize == 0)    imageSize = width*height * 3;
 		if (dataPos == 0)      dataPos = 54;

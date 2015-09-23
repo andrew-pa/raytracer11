@@ -231,7 +231,7 @@ namespace raytracer11
 
 		inline bool hit(const ray& r, hit_record& hr) override
 		{
-			ray tr = ray(vec3(_invworld*vec4(r.e,1)), vec3(_invworld*vec4(r.d,1)));
+			ray tr = ray(vec3(_invworld*vec4(r.e,1)), vec3(_invworld*vec4(r.d,0)));
 			if(_acs->hit(tr, hr))
 			{
 				hr.norm = vec3(transpose(_invworld)*vec4(hr.norm, 0));
@@ -242,7 +242,7 @@ namespace raytracer11
 
 		inline float hit(const ray& r, float xt) override
 		{
-			ray tr = ray(vec3(_invworld*vec4(r.e, 1)), vec3(_invworld*vec4(r.d, 1)));
+			ray tr = ray(vec3(_invworld*vec4(r.e, 1)), vec3(_invworld*vec4(r.d, 0)));
 			return _acs->hit(tr, xt);
 		}
 
