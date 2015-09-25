@@ -1,0 +1,36 @@
+{
+	"resolution" : [640, 480],
+	"samples" : 16,
+	"watermark": true,
+	"camera" : {
+		"position" : [6, 4, 10],
+		"target"   : [0, 0.2, 0]
+	},
+	"objects": [
+		{
+			"type":"sphere",
+			"center":[-1.2, 0, 0],
+			"radius":1,
+			"material": { "type":"perfect-reflection", "color":[0.35, 0.3, 0.3] }
+		},
+		{
+			"type":"sphere",
+			"center":[1.2, 0, 0],
+			"radius":1,
+			"material": { "type":"perfect-reflection", "color":[0.3, 0.3, 0.35] }
+		},
+		{
+			"type":"box",
+			"center":[0, -1.2, 0],
+			"extent":[4, 0.2, 4],
+			"material": { "type":"diffuse", "color":
+        { "type":"checker", "color0":[0.2,0.2,0.2], "color1":[0.4,0.4,0.4], "size":0.5 } }
+		},
+		{
+			"type":"box",
+			"center":[0, 4, 0],
+			"extent":[1, 0.1, 1],
+			"material": { "type":"emission", "color":[8, 8, 7] }
+		}
+	]
+}
