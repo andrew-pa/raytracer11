@@ -2,10 +2,11 @@ cmake_minimum_required(VERSION 3.0)
 
 project(raytracer11)
 
-if(WIN32)
-  include_directories($ENV{HOME}/Source/share/include)
-elseif(MINGW)
+if(MINGW)
+  message("MINGW")
   add_definitions("-DMINGW")
+elseif(WIN32)
+  include_directories($ENV{HOME}/Source/share/include)
 endif()
 
 include_directories("${PROJECT_SOURCE_DIR}/inc")

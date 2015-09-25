@@ -67,7 +67,7 @@ namespace raytracer11
 
 		//proprw(uint, aa_samples, { return _samples; });
 		inline uint aa_samples() { return _samples*_samples; }
-		inline void aa_samples(uint s) { _samples = sqrt(s); }
+		inline void aa_samples(uint s) { _samples = s; }
 		proprw(uvec2, tile_size, { return _tilesize; });
 		proprw(uint, number_of_threads, { return _numthreads; });
 	};

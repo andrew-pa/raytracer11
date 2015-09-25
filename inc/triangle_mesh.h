@@ -98,7 +98,7 @@ namespace raytracer11
 					float w = 1 - (u + v);
 					hr.norm = _mesh->_vertices[i[0]].norm*w +
 						_mesh->_vertices[i[0]].norm*u + _mesh->_vertices[i[0]].norm*v;
-					hr.texcord = _mesh->_vertices[i[0]].texc*w + _mesh->_vertices[i[0]].texc*u +
+					hr.texcoord = _mesh->_vertices[i[0]].texc*w + _mesh->_vertices[i[0]].texc*u +
 						_mesh->_vertices[i[0]].texc*v;
 					hr.hit_surface = _mesh;
 					return true;
@@ -154,7 +154,7 @@ namespace raytracer11
 		{
 			vector<vec3> poss;
 			vector<vec3> norms;
-			vector<vec2> texcords;
+			vector<vec2> texcoords;
 			vector<uint> indices;
 
 			ifstream inf(from_obj_file);
@@ -173,7 +173,7 @@ namespace raytracer11
 				{
 					float u, v;
 					inf >> u >> v;
-					texcords.push_back(vec2(u, v));
+					texcoords.push_back(vec2(u, v));
 				}
 				else if (strcmp(comm, "f") == 0)
 				{
@@ -189,7 +189,7 @@ namespace raytracer11
 							if ('/' != inf.peek())
 							{
 								inf >> it;
-								v.texc = texcords[it - 1];
+								v.texc = texcoords[it - 1];
 							}
 							if ('/' == inf.peek())
 							{
@@ -231,7 +231,7 @@ namespace raytracer11
 
 		inline bool hit(const ray& r, hit_record& hr) override
 		{
-			ray tr = ray(vec3(_invworld*vec4(r.e,1)), vec3(_invworld*vec4(r.d,1)));
+			ray tr = ray(vec3(_invworld*vec4(r.e,1)), vec3(_invworld*vec4(r.d,0)));
 			if(_acs->hit(tr, hr))
 			{
 				hr.norm = vec3(transpose(_invworld)*vec4(hr.norm, 0));
@@ -242,7 +242,7 @@ namespace raytracer11
 
 		inline float hit(const ray& r, float xt) override
 		{
-			ray tr = ray(vec3(_invworld*vec4(r.e, 1)), vec3(_invworld*vec4(r.d, 1)));
+			ray tr = ray(vec3(_invworld*vec4(r.e, 1)), vec3(_invworld*vec4(r.d, 0)));
 			return _acs->hit(tr, xt);
 		}
 

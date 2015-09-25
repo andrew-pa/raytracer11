@@ -12,6 +12,7 @@
 #include <exception>
 #include <algorithm>
 #include <chrono>
+#include <random>
 using namespace std;
 
 #define GLM_FORCE_RADIANS
@@ -26,7 +27,9 @@ using namespace glm;
 #define proprw(t, n, gc) inline t& n() gc
 #define propr(t, n, gc) inline t n() const gc
 
-//#define WRITE_PER_THREAD_PERF_DATA
+#ifndef MINGW
+#define WRITE_PER_THREAD_PERF_DATA
+#endif
 #define WRITE_WP_PERF_DATA
 
 //#define implements(current_class, interface) const int IMPLEMENT_CHECK_##interface = INTERFACE_##interface##<current_class>();
@@ -186,6 +189,17 @@ namespace raytracer11
 		}
 	};
 
+	static mt19937 rnd_generator;
+
+	inline void init_random() {
+		random_device rd;
+		rnd_generator = mt19937(rd());
+	}
+	inline void init_random(uint seed) {
+		rnd_generator = mt19937(seed);
+	}
+
+
 	inline void make_orthonormal(vec3& w, vec3& u, vec3& v)
 	{
 		w = normalize(w);
@@ -195,13 +209,25 @@ namespace raytracer11
 		v = cross(w, u);
 	}
 
+	inline float rand_float() {
+		uniform_real_distribution<float> dist;
+		return dist(rnd_generator);
+	}
+
+//#define CRANDOM
 	inline vec3 cosine_distribution(vec3 n)
 	{
 		vec3 w = n;
 		vec3 u, v;
 		make_orthonormal(w, u, v);
+
+#ifdef CRANDOM
 		float e1 = linearRand(0.f, 1.f);
 		float e2 = linearRand(0.f, 1.f);
+#else 
+		
+		float e1 = rand_float(), e2 = rand_float();
+#endif
 		float se2 = sqrtf(e2);
 		float t2e = pi<float>() * 2 * e1;
 		vec3 d =
@@ -222,6 +248,20 @@ namespace raytracer11
 		vec3 x = p.x*u + p.y*v + h*w;
 
 		return normalize(x);
+	}
+
+	/*
+	vec3 rand_hemi( const vec3 n, const vec2 p ) {
+		vec2 r = hash22(p)*6.2831;
+		vec3 dr=vec3(sin(r.x)*vec2(sin(r.y),cos(r.y)),cos(r.x));
+		return dot(dr,n) * dr;
+	}
+	*/
+
+	inline vec3 hemi_distribution(vec3 n) {
+		vec2 r = vec2(rand_float(), rand_float())*pi<float>()*2.f;
+		vec3 dr = vec3(sin(r.x)*vec2(sin(r.y), cos(r.y)), cos(r.x));
+		return dot(dr, n) * dr;
 	}
 
 #ifdef _MSC_VER

@@ -14,7 +14,7 @@ namespace raytracer11
 	{
 		vec3 v = normalize(-r.d);
 		vec3 T = (tex == nullptr ? vec3(1) :
-			tex->texel(hr.texcord));
+			tex->texel(hr.texcoord));
 		vec3 Ld = ((T*diffuse)*lc) * glm::max(0.f, dot(hr.norm, l));
 		vec3 h = normalize(v + l);
 		vec3 Ls = (specular*lc) * pow(glm::max(0.f,dot(hr.norm, h)), specular_exp);

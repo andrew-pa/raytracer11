@@ -31,11 +31,11 @@ namespace raytracer11
 
 						{
 							float phi = acosf(-dot(hr.norm, vec3(0, 1, 0)));
-							hr.texcord.y = phi * one_over_pi<float>();
+							hr.texcoord.y = phi * one_over_pi<float>();
 							float theta = acosf(dot(vec3(0, 0, -1), hr.norm) / sinf(phi))
 								* two_over_pi<float>();
-							if (dot(vec3(1, 0, 0), hr.norm) >= 0) hr.texcord.x = (1 - theta);
-							else hr.texcord.x = theta;
+							if (dot(vec3(1, 0, 0), hr.norm) >= 0) hr.texcoord.x = (1 - theta);
+							else hr.texcoord.x = theta;
 						}
 						
 						hr.hit_surface = this;
@@ -128,8 +128,8 @@ namespace raytracer11
 		hr.t = tmin;
 		vec3 p = r(tmin);
 		hr.norm = get_normal(p);
-		hr.texcord.x = p.x;
-		hr.texcord.y = p.z;
+		hr.texcoord.x = p.x;
+		hr.texcoord.y = p.z;
 		return true;
 	}
 
