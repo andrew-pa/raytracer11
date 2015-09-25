@@ -38,6 +38,8 @@ material* load_material(const picojson::value& v) {
 		return new diffuse_material(load_color(mj["color"]));
 	} else if(mj["type"].get<string>() == "emission") {
 		return new emmisive_material(load_color(mj["color"]));
+	} else if (mj["type"].get<string>() == "perfect-reflection") {
+		return new perfect_reflection_material(load_color(mj["color"]));
 	}
 }
 
@@ -52,6 +54,7 @@ int main(int argc, char* argv[]) {
 
 	uint samples_override = 0;
 	uvec2 res_override = uvec2(0);
+	int numt = -1;
 
 	string scene_filename = args[0];
 
@@ -63,6 +66,9 @@ int main(int argc, char* argv[]) {
 			else if (args[i] == "-r") {
 				res_override.x = atoi(args[++i].c_str());
 				res_override.y = atoi(args[++i].c_str());
+			}
+			else if (args[i] == "-t") {
+				numt = atoi(args[++i].c_str());
 			}
 		}
 	}
@@ -111,7 +117,7 @@ int main(int argc, char* argv[]) {
 	vec2 tilesize = vec2(32);
 	if(!scenej["tile-size"].is<picojson::null>()) tilesize = loadv2(scenej["tile-size"]);
 
-	path_tracing_renderer rd(cam, sc, rdt, tilesize); 
+	path_tracing_renderer rd(cam, sc, rdt, tilesize, numt); 
 	
 	rd.aa_samples(samples_override > 0 ? samples_override : 
 			scenej["samples"].is<double>() ? scenej["samples"].get<double>() : 64);
