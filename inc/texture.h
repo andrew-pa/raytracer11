@@ -81,6 +81,8 @@ namespace raytracer11
 		propr(uvec2, size, override{ return uvec2(64, 64); });
 	};
 
+
+
 	/*class noise_texture : public texture<vec3, uvec2, vec2>
 	{
 		vec2 _ns;

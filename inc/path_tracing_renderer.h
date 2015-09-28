@@ -1,3 +1,4 @@
+#pragma once
 #include "cmmn.h"
 #include "texture.h"
 #include "surface.h"
@@ -7,28 +8,24 @@
 namespace raytracer11
 {
 
-inline float squlen(vec3 v)
-{
-	return dot(v, v);
-}
-
-struct color_property {
+	struct color_property {
 		vec3 col;
 		texture<vec3, uvec2, vec2>* tex;
-public:
-	color_property(vec3 c = vec3(0.f)) 
-		: col(c), tex(nullptr) {}
-	color_property(texture<vec3, uvec2, vec2>* t)
-		: tex(t), col(0.f) {}
+	public:
+		color_property(vec3 c = vec3(0.f))
+			: col(c), tex(nullptr) {}
+		color_property(texture<vec3, uvec2, vec2>* t)
+			: tex(t), col(0.f) {}
 
-	void operator =(vec3 c) { col = c; tex = nullptr; }
-	void operator =(texture<vec3, uvec2, vec2>* t) { tex = t; }
+		void operator =(vec3 c) { col = c; tex = nullptr; }
+		void operator =(texture<vec3, uvec2, vec2>* t) { tex = t; }
 
-	inline vec3 operator()(const hit_record& hr) const {
-		if (tex) return tex->texel(hr.texcoord);
-		else return col;
-	}
-};
+		inline vec3 operator()(const hit_record& hr) const {
+			if (tex) return tex->texel(hr.texcoord);
+			else return col;
+		}
+	};
+
 
 struct path_tracing_material
 	: public material
@@ -43,63 +40,7 @@ struct path_tracing_material
 	vec3 shade(renderer* rndr, const ray& r, vec3 l, vec3 lc, const hit_record& hr, uint depth = 0)override;
 };
 
-struct emmisive_material : public path_tracing_material
-{
-	emmisive_material(color_property e)
-		: path_tracing_material(e) {}
 
-	vec3 brdf(vec3 ki, vec3 ko, const hit_record&)	override
-	{
-		return vec3(0);
-	}
-
-	vec3 random_ray(vec3 n, vec3 ki, float* pdf) override
-	{
-		if(pdf) *pdf = 0;
-		return vec3(0);
-	}
-};
-
-struct diffuse_material
-	: public path_tracing_material
-{
-	color_property R;
-
-	diffuse_material(color_property r)
-		: R(r), path_tracing_material(vec3(0)) {}
-
-	vec3 brdf(vec3 ki, vec3 ko, const hit_record& hr)	override
-	{
-		return R(hr);
-	}
-
-	vec3 random_ray(vec3 n, vec3 ki, float* pdf) override
-	{
-		if(pdf) *pdf = dot(ki, n) / pi<float>();
-		return cosine_distribution(n);
-	}
-};
-
-struct perfect_reflection_material : public path_tracing_material
-{
-	color_property R;
-
-	perfect_reflection_material(color_property r)
-		: R(r),  path_tracing_material(vec3(0)) {}
-
-	vec3 brdf(vec3 ki, vec3 ko, const hit_record& hr)	override
-	{
-		return R(hr);//vec3(pow(abs(dot(ki, ko)), shininess));
-	}
-
-	vec3 random_ray(vec3 n, vec3 ki, float* pdf) override
-	{
-		if (pdf) *pdf = 1.f;
-		return reflect(-ki, n);
-		//if (pdf) *pdf = dot(ki, n) / pi<float>();
-		//return cosine_distribution(n);
-	}
-};
 
 
 class path_tracing_renderer :

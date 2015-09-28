@@ -6,6 +6,7 @@
 
 namespace raytracer11
 {
+
 	class surface;
 	class renderer
 	{

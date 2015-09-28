@@ -13,6 +13,45 @@
 #include <algorithm>
 #include <chrono>
 #include <random>
+#ifndef MINGW
+#include <thread>
+#include <mutex>
+#else
+#define EOWNERDEAD 2304234
+#define EPROTO 234234234
+#include <Windows.h>
+#include <process.h>
+#include <mutex>
+#include <mingw.mutex.h>
+
+class thread {
+public:
+	HANDLE winh;
+	unsigned int id;
+	unsigned int get_id() const { return id; }
+	thread(function<void()> f) {
+		function<void()>* pf = new function<void()>(f);
+		winh = (HANDLE)_beginthreadex(NULL, 0, thrdfnc, (LPVOID)pf, 0, (unsigned*)&id);
+	}
+
+	static unsigned int __stdcall thrdfnc(void* arg) {
+		function<void()>* f = (function<void()>*)arg;
+		(*f)();
+		return 0;
+	}
+
+	void join() {
+		WaitForSingleObject(winh, INFINITE);
+		CloseHandle(winh);
+	}
+
+	static unsigned int hardware_concurrency() noexcept { return 4; }
+};
+
+#endif
+
+
+#include <queue>
 using namespace std;
 
 #define GLM_FORCE_RADIANS
@@ -263,6 +302,8 @@ namespace raytracer11
 		vec3 dr = vec3(sin(r.x)*vec2(sin(r.y), cos(r.y)), cos(r.x));
 		return dot(dr, n) * dr;
 	}
+
+
 
 #ifdef _MSC_VER
 #define NOEXCEPT throw()

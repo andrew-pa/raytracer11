@@ -1,4 +1,4 @@
-#include "cmmn.h"
+/*#include "cmmn.h"
 #include "texture.h"
 #include "surface.h"
 #include "camera.h"
@@ -168,7 +168,7 @@ int path_main()
 	
 	srand(time(nullptr));
 	texture2d* rt = new texture2d(uvec2(640, 480));
-	camera cam(vec3(0, 5, -14)/*vec3(2, 3, 8)*/, vec3(0), (vec2)rt->size(), 1.f);
+	camera cam(vec3(0, 5, -14)/*vec3(2, 3, 8), vec3(0), (vec2)rt->size(), 1.f);
 	
 	vector<surface*> objects;
 	objects.push_back(new box(vec3(0, 4, 0), vec3(1.f, .05f, 1.f),
@@ -197,7 +197,7 @@ int path_main()
 	i.push_back(0); i.push_back(1); i.push_back(2);
 	i.push_back(1); i.push_back(2); i.push_back(3);
 	triangle_mesh<bvh_node>* t = new triangle_mesh<bvh_node>(v, i, new diffuse_material(vec3(0,0,.6f)));
-	objects.push_back(t);*/
+	objects.push_back(t);
 
 	//objects.push_back(new sphere(vec3(3.f, 1.f, -2.3f), .75f,
 	//	new rlm_mat(vec3(0.f, 5.f, 1.f), vec3(.8f), vec2(100000))));
@@ -310,3 +310,4 @@ int oldmain(int argc, char* argv[])
 //	return scene_path_main(args);
 	return 0;
 }
+*/

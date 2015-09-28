@@ -3,8 +3,11 @@
 #include "surface.h"
 #include "parallel_tiles_renderer.h"
 #include "path_tracing_renderer.h"
+#include "pt_materials.h"
 #include "bvh_node.h"
 #include "triangle_mesh.h"
+#include "postprocesser.h"
+
 #include "picojson.h"
 #include <iterator>
 using namespace raytracer11;
@@ -40,7 +43,7 @@ material* load_material(const picojson::value& v) {
 		return new emmisive_material(load_color(mj["color"]));
 	} else if (mj["type"].get<string>() == "perfect-reflection") {
 		return new perfect_reflection_material(load_color(mj["color"]));
-	}
+	} 
 }
 
 int main(int argc, char* argv[]) {
@@ -56,6 +59,9 @@ int main(int argc, char* argv[]) {
 	uvec2 res_override = uvec2(0);
 	int numt = -1;
 
+	bool ovride_postprocess = false, tonemap_override = false;
+	float gamma_override = 1.f, tonemap_white_override = 0.f;
+
 	string scene_filename = args[0];
 
 	if (args.size() > 1) {
@@ -69,6 +75,18 @@ int main(int argc, char* argv[]) {
 			}
 			else if (args[i] == "-t") {
 				numt = atoi(args[++i].c_str());
+			}
+			else if (args[i] == "-pp") {
+				ovride_postprocess = true;
+				for (uint j = i; j < args.size() && args[j] != ";"; ++j) {
+					if (args[j] == "-tm") {
+						tonemap_override = true;
+						tonemap_white_override = atof(args[++j].c_str());
+					}
+					else if (args[j] == "-g") {
+						gamma_override = atof(args[++j].c_str());
+					}
+				}
 			}
 		}
 	}
@@ -135,6 +153,29 @@ int main(int argc, char* argv[]) {
 	auto tms = (double)tus / 1000000.0;
 	cout << "Render took: " << tms << "ms" << endl;
 	#endif
+	
+	if (scenej["postprocess"].is<picojson::object>() || ovride_postprocess) {
+		::postprocessor ppr{ gamma_override, tonemap_override, tonemap_white_override, numt, tilesize };
+		if (!ovride_postprocess) {
+			auto ppj = scenej["postprocess"].get<picojson::object>();
+			if (ppj["gamma"].is<double>()) ppr.inv_gamma = 1.f / ppj["gamma"].get<double>();
+			if (ppj["tonemap"].is <bool>() && ppj["tonemap"].get<bool>()) {
+				ppr.tonemap = true;
+				ppr.tonemap_white = ppj["tonemap-white"].get<double>();
+			}
+		}
+		
+#ifdef WRITE_WP_PERF_DATA
+		start_time = chrono::system_clock::now();
+#endif
+		ppr.render(rdt, rdt);
+#ifdef WRITE_WP_PERF_DATA
+		end_time = chrono::system_clock::now();
+		long long pps_tus = (chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count());
+		auto pps_tms = (double)tus / 1000000.0;
+		cout << "Postprocess took: " << pps_tms << "ms" << endl;
+#endif
+	}
 
 	if(!scenej["watermark"].is<picojson::null>() && scenej["watermark"].get<bool>()) {
 		ostringstream otxt;
