@@ -135,15 +135,15 @@ int main(int argc, char* argv[]) {
 	}
 	bvh_node* sc = new bvh_node(objects);
 	
-	vec2 tilesize = vec2(32);
-	if(!scenej["tile-size"].is<picojson::null>()) tilesize = loadv2(scenej["tile-size"]);
+	uvec2 tilesize = uvec2(32);
+	if(!scenej["tile-size"].is<picojson::null>()) tilesize = (uvec2)loadv2(scenej["tile-size"]);
 
 	path_tracing_renderer rd(cam, sc, rdt, tilesize, numt); 
 	
 	rd.aa_samples(samples_override > 0 ? samples_override : 
 			scenej["samples"].is<double>() ? scenej["samples"].get<double>() : 64);
 
-	cout << "render starting: [AA: " << rd.aa_samples() << ", tile size: " << rd.tile_size() << ", object count: " << objects.size() << "]" << endl;
+	cout << "render starting: [AA: " << rd.aa_samples() << ", tile size: [" << rd.tile_size().x << "," << rd.tile_size().y << "], object count: " << objects.size() << "]" << endl;
 
 
 	#ifdef WRITE_WP_PERF_DATA
@@ -151,7 +151,7 @@ int main(int argc, char* argv[]) {
 	#endif
 	rd.render();
 	#ifdef WRITE_WP_PERF_DATA
-	auto end_time = chrono::system_clock::now();
+auto end_time = chrono::system_clock::now();
 	long long tus = (chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count());
 	auto tms = (double)tus / 1000000.0;
 	cout << "Render took: " << tms << "ms" << endl;

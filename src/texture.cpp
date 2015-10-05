@@ -500,7 +500,7 @@ namespace raytracer11
 				continue;
 			}
 			string chrm = (*chars)[c];
-			uvec2 cpos = vec2(0, 0);
+			uvec2 cpos = uvec2(0, 0);
 			for (auto c : chrm)
 			{
 				if (c == 'x')

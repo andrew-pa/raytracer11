@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 2.8)
 
 project(raytracer11)
 
@@ -7,6 +7,19 @@ if(MINGW)
   add_definitions("-DMINGW")
 elseif(WIN32)
   include_directories($ENV{HOME}/Source/share/include)
+elseif(UNIX)
+    message("USING LINUX")
+    include(CheckCXXCompilerFlag)
+    CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+    CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
+    if(COMPILER_SUPPORTS_CXX11)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    elseif(COMPILER_SUPPORTS_CXX0X)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+    else()
+        message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
+    endif()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread ")
 endif()
 
 set(ASSIMP_DIR ${PROJECT_SOURCE_DIR}/depd/assimp)
@@ -20,4 +33,8 @@ add_library(soil ${SOIL_SOURCE})
 file(GLOB SOURCE src/*.cpp inc/*.h)
 add_executable(raytracer11 ${SOURCE})
 set_property(TARGET raytracer11 PROPERTY CXX_STANDARD 14)
+<<<<<<< Updated upstream
 target_link_libraries(raytracer11 soil ${ASSIMP_DIR}/build/code/$<CONFIG>/assimp*.lib)
+=======
+
+>>>>>>> Stashed changes

@@ -206,11 +206,11 @@ int path_main()
 	//group* sc = new group(objects);
 	//grid<8, 8, 8>* sc = new grid<8,8,8>(objects);
 
-	path_tracing_renderer rd(cam, sc, rt, vec2(32));
+	path_tracing_renderer rd(cam, sc, rt, uvec2(32));
 
 	rd.aa_samples(60);
   
-  cout << "render starting: [AA: " << rd.aa_samples() << ", tile size: " << rd.tile_size() << ", object count: " << objects.size() << "]" << endl;
+  //cout << "render starting: [AA: " << rd.aa_samples() << ", tile size: " << rd.tile_size() << ", object count: " << objects.size() << "]" << endl;
 
 #ifdef WRITE_WP_PERF_DATA
 	auto start_time = chrono::system_clock::now();
