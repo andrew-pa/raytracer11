@@ -12,6 +12,8 @@
 #include <iterator>
 using namespace raytracer11;
 
+#include "assimp\Importer.hpp"
+
 vec2 loadv2(const picojson::value& v) {
 	auto ar = v.get<picojson::value::array>();
 	return vec2(ar[0].get<double>(), ar[1].get<double>());
