@@ -1,174 +1,73 @@
 #include "texture.h"
+#include "soil\SOIL.h"
 
 namespace raytracer11
 {
-	texture2d::texture2d(const string& bmp_filename)
+	texture2d::texture2d(const string& filename)
 	{
-		unsigned char header[54];
-		unsigned int dataPos;
-		unsigned int imageSize;
-		unsigned int width, height;
+		int width, height, chanl;
+		auto data = SOIL_load_image(filename.c_str(), &width, &height, &chanl, 3);
 
-		unsigned char * data;
+		if (chanl < 3) throw rexception("not enough channels");
 
-		FILE * file;
-		#ifdef _MSVC_
-		fopen_s(&file, bmp_filename.c_str(), "rb");
-		#else
-		file = fopen(bmp_filename.c_str(), "rb");
-		#endif
-		if (!file) throw rexception((string("couldn't open file ") + bmp_filename));
-		if (fread(header, 1, 54, file) != 54)
-			throw rexception("invalid BMP header");
+		//unsigned char header[54];
+		//unsigned int dataPos;
+		//unsigned int imageSize;
+		//unsigned int width, height;
 
-		//// A BMP files always begins with "BM"
+		//unsigned char * data;
 
-		if (header[0] != 'B' || header[1] != 'M')
-			throw rexception("invalid BMP file");
+		//FILE * file;
+		//#ifdef _MSVC_
+		//fopen_s(&file, bmp_filename.c_str(), "rb");
+		//#else
+		//file = fopen(bmp_filename.c_str(), "rb");
+		//#endif
+		//if (!file) throw rexception((string("couldn't open file ") + bmp_filename));
+		//if (fread(header, 1, 54, file) != 54)
+		//	throw rexception("invalid BMP header");
 
-		//// Make sure this is a 24bpp file
+		////// A BMP files always begins with "BM"
 
-		if (*(int*)&(header[0x1E]) != 0)          throw rexception("Not a correct BMP file\n"); 
-		if (*(int*)&(header[0x1C]) != 24)         throw rexception("Not a correct BMP file\n");
+		//if (header[0] != 'B' || header[1] != 'M')
+		//	throw rexception("invalid BMP file");
 
-		dataPos = *(int*)&(header[0x0A]);
-		imageSize = *(int*)&(header[0x22]);
-		width = *(int*)&(header[0x12]);
-		height = *(int*)&(header[0x16]);
+		////// Make sure this is a 24bpp file
+
+		//if (*(int*)&(header[0x1E]) != 0)          throw rexception("Not a correct BMP file\n"); 
+		//if (*(int*)&(header[0x1C]) != 24)         throw rexception("Not a correct BMP file\n");
+
+		//dataPos = *(int*)&(header[0x0A]);
+		//imageSize = *(int*)&(header[0x22]);
+		//width = *(int*)&(header[0x12]);
+		//height = *(int*)&(header[0x16]);
+		//_size = uvec2(width, height);
+		//
+
+		//if (imageSize == 0)    imageSize = width*height * 3;
+		//if (dataPos == 0)      dataPos = 54;
+
+		//data = new unsigned char[imageSize];
+		//fread(data, 1, imageSize, file);
+		//fclose(file);
+
 		_size = uvec2(width, height);
-		
 
-		if (imageSize == 0)    imageSize = width*height * 3;
-		if (dataPos == 0)      dataPos = 54;
-
-		data = new unsigned char[imageSize];
-		fread(data, 1, imageSize, file);
-		fclose(file);
-
-		_pixels = new vec3[imageSize / 3];
+		_pixels = new vec3[(width*height)];
 
 		int j = 0;
-		for (int i = imageSize; i > 0; i-=3)
+		for (int i = 0; i < width*height*chanl; i+=3)
 		{
 			vec3 d(0);
-			d.b = (float)(data[i]) / 255.f;
-			d.g = (float)(data[i+1]) / 255.f;
-			d.r = (float)(data[i+2]) / 255.f;
+			d.b = (float)(data[i + 2]) / 255.f;
+			d.g = (float)(data[i + 1]) / 255.f;
+			d.r = (float)(data[i]) / 255.f;
 			_pixels[j] = d;
 			j++;
 		}
 
 	}
 
-#pragma region STB_IMAGE_WRITE
-	namespace stb_image_write
-	{
-#include <stdlib.h>
-#include <stdarg.h>
-#include <assert.h>
-	typedef unsigned int stbiw_uint32;
-	typedef int stb_image_write_test[sizeof(stbiw_uint32) == 4 ? 1 : -1];
-
-	static void writefv(FILE *f, const char *fmt, va_list v)
-	{
-		while (*fmt) {
-			switch (*fmt++) {
-			case ' ': break;
-			case '1': { unsigned char x = (unsigned char)va_arg(v, int); fputc(x, f); break; }
-			case '2': { int x = va_arg(v, int); unsigned char b[2];
-				b[0] = (unsigned char)x; b[1] = (unsigned char)(x >> 8);
-				fwrite(b, 2, 1, f); break; }
-			case '4': { stbiw_uint32 x = va_arg(v, int); unsigned char b[4];
-				b[0] = (unsigned char)x; b[1] = (unsigned char)(x >> 8);
-				b[2] = (unsigned char)(x >> 16); b[3] = (unsigned char)(x >> 24);
-				fwrite(b, 4, 1, f); break; }
-			default:
-				assert(0);
-				return;
-			}
-		}
-	}
-
-	static void write3(FILE *f, unsigned char a, unsigned char b, unsigned char c)
-	{
-		unsigned char arr[3];
-		arr[0] = a, arr[1] = b, arr[2] = c;
-		fwrite(arr, 3, 1, f);
-	}
-
-	static void write_pixels(FILE *f, int rgb_dir, int vdir, int x, int y, int comp, void *data, int write_alpha, int scanline_pad)
-	{
-		unsigned char bg[3] = { 255, 0, 255 }, px[3];
-		stbiw_uint32 zero = 0;
-		int i, j, k, j_end;
-
-		if (y <= 0)
-			return;
-
-		if (vdir < 0)
-			j_end = -1, j = y - 1;
-		else
-			j_end = y, j = 0;
-
-		for (; j != j_end; j += vdir) {
-			for (i = 0; i < x; ++i) {
-				unsigned char *d = (unsigned char *)data + (j*x + i)*comp;
-				if (write_alpha < 0)
-					fwrite(&d[comp - 1], 1, 1, f);
-				switch (comp) {
-				case 1:
-				case 2: write3(f, d[0], d[0], d[0]);
-					break;
-				case 4:
-					if (!write_alpha) {
-						// composite against pink background
-						for (k = 0; k < 3; ++k)
-							px[k] = bg[k] + ((d[k] - bg[k]) * d[3]) / 255;
-						write3(f, px[1 - rgb_dir], px[1], px[1 + rgb_dir]);
-						break;
-					}
-					/* FALLTHROUGH */
-				case 3:
-					write3(f, d[1 - rgb_dir], d[1], d[1 + rgb_dir]);
-					break;
-				}
-				if (write_alpha > 0)
-					fwrite(&d[comp - 1], 1, 1, f);
-			}
-			fwrite(&zero, scanline_pad, 1, f);
-		}
-	}
-
-	static int outfile(char const *filename, int rgb_dir, int vdir, int x, int y, int comp, void *data, int alpha, int pad, const char *fmt, ...)
-	{
-		FILE *f;
-		if (y < 0 || x < 0) return 0;
-		#ifdef _MSVC_
-		fopen_s(&f, filename, "wb");
-		#else
-		f = fopen(filename, "wb");
-		#endif
-		if (f) {
-			va_list v;
-			va_start(v, fmt);
-			writefv(f, fmt, v);
-			va_end(v);
-			write_pixels(f, rgb_dir, vdir, x, y, comp, data, alpha, pad);
-			fclose(f);
-		}
-		return f != NULL;
-	}
-
-	int stbi_write_bmp(char const *filename, int x, int y, int comp, const void *data)
-	{
-		int pad = (-x * 3) & 3;
-		return outfile(filename, -1, -1, x, y, comp, (void *)data, 0, pad,
-			"11 4 22 4" "4 44 22 444444",
-			'B', 'M', 14 + 40 + (x * 3 + pad)*y, 0, 0, 14 + 40,  // file header
-			40, x, y, 1, 24, 0, 0, 0, 0, 0, 0);             // bitmap header
-	}
-	}
-#pragma endregion
 	void texture2d::write_bmp(const string& filename)
 	{
 		unsigned char* imgdata = new unsigned char[_size.x*_size.y * 4];
@@ -177,13 +76,13 @@ namespace raytracer11
 			for (int x = 0; x < _size.x *4; x += 4)
 			{
 				vec3 d = clamp(_pixels[(y*_size.x + x) / 4], vec3(0), vec3(1));
-				imgdata[(y*_size.x + x)] = (unsigned char)(d.x * 255.f);
-				imgdata[(y*_size.x + x) + 1] = (unsigned char)(d.y * 255.f);
-				imgdata[(y*_size.x + x) + 2] = (unsigned char)(d.z * 255.f);
+				imgdata[(y*_size.x + x)] = (unsigned char)(d.r * 255.f);
+				imgdata[(y*_size.x + x) + 1] = (unsigned char)(d.g * 255.f);
+				imgdata[(y*_size.x + x) + 2] = (unsigned char)(d.b * 255.f);
 				imgdata[(y*_size.x + x) + 3] = 255;
 			}
 		}
-		stb_image_write::stbi_write_bmp(filename.c_str(), _size.x, _size.y, 4, imgdata);
+		SOIL_save_image(filename.c_str(), SOIL_SAVE_TYPE_BMP, _size.x, _size.y, 4, imgdata);
 	}
 
 	void texture2d::draw_text(const std::string& text, uvec2 pos, vec3 color)

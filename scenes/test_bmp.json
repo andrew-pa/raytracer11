@@ -19,7 +19,7 @@
 			"extent":[4, 0.1, 4],
 			"material": {
 				"type":"diffuse",
-				"color":{ "type":"bmp", "path":"test.bmp" }
+				"color":{ "type":"img", "path":"test.bmp" }
 			}
 		}
 	]

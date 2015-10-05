@@ -22,7 +22,7 @@ namespace raytracer11
 		texture2d(uvec2 _s)
 			: _size(_s), _pixels(new vec3[_s.x*_s.y])
 		{}
-		texture2d(const string& bmp_filename);
+		texture2d(const string& filename);
 
 		inline vec3& pixel(uvec2 c) override
 		{

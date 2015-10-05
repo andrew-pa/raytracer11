@@ -29,7 +29,7 @@ color_property load_color(const picojson::value& v) {
 		if(ty == "checker") {
 			return color_property(new checker_texture(loadv3(ov["color0"]), loadv3(ov["color1"]), 
 				(float)ov["size"].get<double>()));
-		} else if(ty == "bmp") {
+		} else if(ty == "img") {
 			return color_property(new texture2d(ov["path"].get<string>()));
 		}
 	}
@@ -47,6 +47,7 @@ material* load_material(const picojson::value& v) {
 }
 
 int main(int argc, char* argv[]) {
+
 	srand(time(nullptr));
 	vector<string> args; for(int i = 1; i < argc; ++i) args.push_back(argv[i]);
 	
