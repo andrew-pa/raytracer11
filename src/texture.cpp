@@ -1,5 +1,5 @@
 #include "texture.h"
-#include "soil\SOIL.h"
+#include "soil/SOIL.h"
 
 namespace raytracer11
 {

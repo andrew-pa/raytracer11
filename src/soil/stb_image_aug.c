@@ -63,7 +63,7 @@
              on 'test' only check type, not whether we support this variant
 */
 
-#include "soil\stb_image_aug.h"
+#include "soil/stb_image_aug.h"
 
 #ifndef STBI_NO_HDR
 #include <math.h>  // ldexp
@@ -84,6 +84,9 @@
   #else
   #define __forceinline
   #endif
+  void fopen_s(FILE** f, const char* filename, const char* mode) {
+      *f = fopen(filename, mode);
+  }
 #endif
 
 
@@ -3678,5 +3681,5 @@ int stbi_write_tga(char const *filename, int x, int y, int comp, void *data)
 
 //	add in my DDS loading support
 #ifndef STBI_NO_DDS
-#include "soil\stbi_DDS_aug_c.h"
+#include "soil/stbi_DDS_aug_c.h"
 #endif

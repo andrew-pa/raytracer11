@@ -67,5 +67,24 @@ namespace raytracer11 {
 		}
 	};
 
-	
+	struct cone_fuzzy_reflection_material : public path_tracing_material {
+		color_property R;
+		float prob_ref, cone_size;
+		
+		cone_fuzzy_reflection_material(color_property r, float pr, float cs) : R(r), prob_ref(pr), cone_size(cs), path_tracing_material(vec3(0)) {}
+		
+		vec3 brdf(vec3 ki, vec3 ko, const hit_record& hr) override {
+			return R(hr);
+		}
+		
+		vec3 random_ray(vec3 n, vec3 ki, float* pdf) override {
+			if(linearRand(0.f, 1.f) < prob_ref) {
+				if(pdf) *pdf = prob_ref;
+				return cone_distribution(n, cone_size);
+			} else {
+				if(pdf) *pdf = 1.f-prob_ref;
+				return cosine_distribution(n);
+			}
+		}
+	};
 }

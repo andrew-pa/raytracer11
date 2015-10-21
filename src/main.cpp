@@ -12,7 +12,7 @@
 #include <iterator>
 using namespace raytracer11;
 
-#include "assimp\Importer.hpp"
+#include "assimp/Importer.hpp"
 
 vec2 loadv2(const picojson::value& v) {
 	auto ar = v.get<picojson::value::array>();
@@ -45,7 +45,9 @@ material* load_material(const picojson::value& v) {
 		return new emmisive_material(load_color(mj["color"]));
 	} else if (mj["type"].get<string>() == "perfect-reflection") {
 		return new perfect_reflection_material(load_color(mj["color"]));
-	} 
+	} else if (mj["type"].get<string>() == "cone-fuzzy-reflection") {
+		return new cone_fuzzy_reflection_material(load_color(mj["color"]), mj["prob"].get<double>(), mj["size"].get<double>());
+	}
 }
 
 int main(int argc, char* argv[]) {

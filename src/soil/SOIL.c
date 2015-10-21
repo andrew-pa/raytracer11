@@ -27,10 +27,10 @@
 	#define APIENTRY
 #endif
 
-#include "SOIL.h"
-#include "soil\stb_image_aug.h"
-#include "soil\image_helper.h"
-#include "soil\image_DXT.h"
+#include "soil/SOIL.h"
+#include "soil/stb_image_aug.h"
+#include "soil/image_helper.h"
+#include "soil/image_DXT.h"
 
 #include <stdlib.h>
 #include <string.h>

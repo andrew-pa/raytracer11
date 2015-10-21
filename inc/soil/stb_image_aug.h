@@ -156,6 +156,7 @@
 
 #ifndef STBI_NO_STDIO
 #include <stdio.h>
+inline void fopen_s(FILE** f, const char* filename, const char* mode);
 #endif
 
 #define STBI_VERSION 1

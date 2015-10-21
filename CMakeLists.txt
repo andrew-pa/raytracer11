@@ -33,5 +33,5 @@ add_library(soil ${SOIL_SOURCE})
 file(GLOB SOURCE src/*.cpp inc/*.h)
 add_executable(raytracer11 ${SOURCE})
 set_property(TARGET raytracer11 PROPERTY CXX_STANDARD 14)
-target_link_libraries(raytracer11 soil ${ASSIMP_DIR}/build/code/$<CONFIG>/assimp*.lib)
+target_link_libraries(raytracer11 soil ${ASSIMP_DIR}/build/code/libassimp.so)
 
