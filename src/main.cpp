@@ -8,6 +8,8 @@
 #include "triangle_mesh.h"
 #include "postprocesser.h"
 
+#include "ailoader.h"
+
 #include "picojson.h"
 #include <iterator>
 using namespace raytracer11;
@@ -121,7 +123,7 @@ int main(int argc, char* argv[]) {
 	for(const auto& vobjj : scenej["objects"].get<picojson::value::array>()) {
 		auto objj = vobjj.get<picojson::value::object>();
 		auto type = objj["type"].get<string>();
-		auto mat = load_material(objj["material"]);
+		auto mat = objj.find("material")!=objj.end() ? load_material(objj["material"]) : nullptr;
 		if(type == "sphere") {
 			objects.push_back(new sphere(loadv3(objj["center"]), objj["radius"].get<double>(), mat));
 		} else if(type == "box") {
@@ -133,6 +135,12 @@ int main(int argc, char* argv[]) {
 			if (objj["position"].is<picojson::array>()) w = translate(w, loadv3(objj["position"]));
 			objects.push_back(new triangle_mesh<bvh_node>(objj["path"].get<string>(), mat, w));
 		}
+#ifdef ASSIMP
+		else if (type == "model") {
+			auto mo = assimp_loader::load_model(objj["path"].get<string>());
+			objects.insert(objects.end(), mo.begin(), mo.end());
+		}
+#endif
 
 	}
 	bvh_node* sc = new bvh_node(objects);

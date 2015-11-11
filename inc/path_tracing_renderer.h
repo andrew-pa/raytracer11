@@ -9,19 +9,29 @@ namespace raytracer11
 {
 
 	struct color_property {
-		vec3 col;
+		vec3 col; bool both;
 		texture<vec3, uvec2, vec2>* tex;
 	public:
 		color_property(vec3 c = vec3(0.f))
-			: col(c), tex(nullptr) {}
+			: col(c), tex(nullptr), both(false) {}
 		color_property(texture<vec3, uvec2, vec2>* t)
-			: tex(t), col(0.f) {}
+			: tex(t), col(0.f), both(false) {}
+		color_property(vec3 c, texture<vec3, uvec2, vec2>* t)
+			: tex(t), col(c), both(true) {
+			if (col == vec3(1.f) || col == vec3(0.f) || tex == nullptr) both = false;
+		}
 
-		void operator =(vec3 c) { col = c; tex = nullptr; }
-		void operator =(texture<vec3, uvec2, vec2>* t) { tex = t; }
+		void operator =(vec3 c) { col = c; tex = nullptr; both = false; }
+		void operator =(texture<vec3, uvec2, vec2>* t) { tex = t; both = false; }
+		void operator =(tuple<vec3, texture<vec3, uvec2, vec2>*> x) {
+			col = get<0>(x);
+			tex = get<1>(x);
+			both = true;
+		}
 
 		inline vec3 operator()(const hit_record& hr) const {
-			if (tex) return tex->texel(hr.texcoord);
+			if (both) return tex->texel(hr.texcoord)*col;
+			else if (tex) return tex->texel(hr.texcoord);
 			else return col;
 		}
 	};
@@ -31,8 +41,9 @@ struct path_tracing_material
 	: public material
 {
 	color_property Le;
+	texture<vec3, uvec2, vec2>* normalmap;
 	path_tracing_material(color_property e)
-		: Le(e){}
+		: Le(e), normalmap(nullptr) {}
 
 	virtual vec3 brdf(vec3 ki, vec3 ko, const hit_record& hr) = 0;
 	//virtual float pdf(vec3 ki, vec3 ko, vec3 n) = 0;

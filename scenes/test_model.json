@@ -1,0 +1,32 @@
+{
+	"resolution" : [640, 480],
+	"samples" : 16,
+	"watermark": true,
+    "postprocess": {
+        "gamma": 2.2,
+        "tonemap":true,
+        "tonemap-white":0.9
+    },
+	"camera" : {
+		"position" : [7, 7, 14],
+		"target"   : [0, 0.5, 0]
+	},
+	"objects": [
+		{
+			"type":"model",
+            "path":"../scenes/teapot.obj"
+        },
+		{
+			"type":"box",
+			"center":[0, -1.2, 0],
+			"extent":[6, 0.2, 4],
+			"material": { "type":"diffuse", "color": [0.5, 0.5, 0.5] }
+		},
+		{
+			"type":"box",
+			"center":[0, 4, 0],
+			"extent":[1, 0.1, 1],
+			"material": { "type":"emission", "color":[6, 6, 5] }
+		}
+	]
+}

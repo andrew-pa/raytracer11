@@ -6,9 +6,9 @@ namespace raytracer11
 	texture2d::texture2d(const string& filename)
 	{
 		int width, height, chanl;
-		auto data = SOIL_load_image(filename.c_str(), &width, &height, &chanl, 3);
+		auto data = SOIL_load_image(filename.c_str(), &width, &height, &chanl, SOIL_LOAD_AUTO);
 
-		if (chanl < 3) throw rexception("not enough channels");
+		//if (chanl < 3) throw rexception("not enough channels");
 
 		//unsigned char header[54];
 		//unsigned int dataPos;
@@ -56,7 +56,7 @@ namespace raytracer11
 		_pixels = new vec3[(width*height)];
 
 		int j = 0;
-		for (int i = 0; i < width*height*chanl; i+=3)
+		for (int i = 0; i < width*height*chanl; i+=chanl)
 		{
 			vec3 d(0);
 			d.b = (float)(data[i + 2]) / 255.f;

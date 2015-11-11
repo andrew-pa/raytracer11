@@ -2,6 +2,11 @@
 	"resolution" : [640, 480],
 	"samples" : 16,
 	"watermark": true,
+	"postprocess": {
+		"gamma": 2.2,
+		"tonemap":true,
+		"tonemap-white":0.9
+	},
 	"camera" : {
 		"position" : [6, 4, 10],
 		"target"   : [0, 0.2, 0]

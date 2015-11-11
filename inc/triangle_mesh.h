@@ -3,6 +3,15 @@
 #include "surface.h"
 #include "bvh_node.h"
 #include <cstring>
+
+#ifdef ASSIMP
+#include "assimp\scene.h"
+		inline vec3 to_glm3(const aiVector3D& v) { return vec3(v.x, v.y, v.z); }
+		inline vec2 to_glm2(const aiVector3D& v) { return vec2(v.x, v.y); }
+		inline vec3 to_glm3(const aiColor3D& v) { return vec3(v.r, v.g, v.b); }
+		inline vec4 to_glm4(const aiColor4D& v) { return vec4(v.r, v.g, v.b, v.a); }
+#endif
+
 namespace raytracer11 
 {
 
@@ -48,6 +57,7 @@ namespace raytracer11
 		protected:
 			triangle_mesh* _mesh;
 			uint i[3];
+			vec3 p[3];
 			aabb _b;
 			//vec3 _cntr;
 		public:
@@ -56,8 +66,12 @@ namespace raytracer11
 			{
 				i[0] = _0; i[1] = _1; i[2] = _2;
 				
+
 				_b = aabb();
-				for (int q = 0; q < 3; ++q) _b.add_point(_mesh->_vertices[i[q]].pos);
+				for (int q = 0; q < 3; ++q) {
+					p[q] = _mesh->_vertices[i[q]].pos;
+					_b.add_point(p[q]);
+				}
 
 			//	_cntr = third<float>() * (mesh->_vertices[i[0]] + 
 			//		mesh->_vertices[i[1]] + mesh->_vertices[i[2]]);
@@ -71,27 +85,27 @@ namespace raytracer11
 		
 			inline bool hit(const ray& r, hit_record& hr) override
 			{
-				vec3 v0 = _mesh->_vertices[i[0]].pos;
-				vec3 v1 = _mesh->_vertices[i[1]].pos;
-				vec3 v2 = _mesh->_vertices[i[2]].pos;
+				const vec3 v0 = p[0];//_mesh->_vertices[i[0]].pos;
+				const vec3 v1 = p[1];//_mesh->_vertices[i[1]].pos;
+				const vec3 v2 = p[2];//_mesh->_vertices[i[2]].pos;
 
 				float u, v;
-				vec3 e1 = v1 - v0;
-				vec3 e2 = v2 - v0;
-				vec3 pv = cross(r.d, e2);
-				float det = dot(e1,pv);
+				const vec3 e1 = v1 - v0;
+				const vec3 e2 = v2 - v0;
+				const vec3 pv = cross(r.d, e2);
+				const float det = dot(e1,pv);
 				if (det == 0)
 					return false;
-				float idet = 1.f / det;
-				vec3 tv = r.e - v0;
+				const float idet = 1.f / det;
+				const vec3 tv = r.e - v0;
 				u = dot(tv,pv)*idet;
 				if (u < 0 || u > 1.f)
 					return false;
-				vec3 qv = cross(tv,e1);
+				const vec3 qv = cross(tv,e1);
 				v = dot(r.d, qv) * idet;
 				if (v < 0 || u + v > 1)
 					return false;
-				float nt = dot(e2, qv)*idet;
+				const float nt = dot(e2, qv)*idet;
 				if(nt > 0 && nt < hr.t)
 				{
 					hr.t = nt;
@@ -108,9 +122,9 @@ namespace raytracer11
 
 			inline float hit(const ray& r, float xt) override
 			{
-				vec3 v0 = _mesh->_vertices[i[0]].pos;
-				vec3 v1 = _mesh->_vertices[i[1]].pos;
-				vec3 v2 = _mesh->_vertices[i[2]].pos;
+				const vec3 v0 = p[0];//_mesh->_vertices[i[0]].pos;
+				const vec3 v1 = p[1];//_mesh->_vertices[i[1]].pos;
+				const vec3 v2 = p[2];//_mesh->_vertices[i[2]].pos;
 
 				float u, v;
 				vec3 e1 = v1 - v0;
@@ -223,6 +237,34 @@ namespace raytracer11
 			}
 			_acs = new accl_struct(ts);
 		}
+
+#ifdef ASSIMP
+		inline mat4 to_glm4x4(const aiMatrix4x4& v)
+		{
+			return transpose(mat4(
+				v.a1, v.a2, v.a3, v.a4,
+				v.b1, v.b2, v.b3, v.b4,
+				v.c1, v.c2, v.c3, v.c4,
+				v.d1, v.d2, v.d3, v.d4));
+		}
+		triangle_mesh(const aiScene* scn, aiMesh* m, material* mat) : m(mat) {
+			using namespace assimp_loader;
+			auto node = scn->mRootNode->FindNode(m->mName.C_Str());
+			_world = to_glm4x4(node->mTransformation);
+			_invworld = inverse(_world);
+			for (int i = 0; i < m->mNumVertices; ++i)
+				_vertices.push_back(vertex(
+					to_glm3(m->mVertices[i]),
+					to_glm3(m->mNormals[i]),
+					to_glm2(m->mTextureCoords[0][i])));
+			vector<surface*> tris;
+			for (int q = 0; q < m->mNumFaces; ++q) {
+				auto f = m->mFaces[q];
+				tris.push_back(new triangle(f.mIndices[0], f.mIndices[1], f.mIndices[2], this));
+			}
+			_acs = new accl_struct(tris);
+		}
+#endif
 
 		~triangle_mesh()
 		{
