@@ -37,13 +37,18 @@ color_property load_color(const picojson::value& v) {
 
 material* load_material(const picojson::value& v) {
 	auto mj = v.get<picojson::value::object>();
-	if(mj["type"].get<string>() == "diffuse") {
+	string type = mj["type"].get<string>();
+	if(type == "diffuse") {
 		return new diffuse_material(load_color(mj["color"]));
-	} else if(mj["type"].get<string>() == "emission") {
+	} else if(type == "emission") {
 		return new emmisive_material(load_color(mj["color"]));
-	} else if (mj["type"].get<string>() == "perfect-reflection") {
+	} else if (type == "perfect-reflection") {
 		return new perfect_reflection_material(load_color(mj["color"]));
-	} 
+	} else if (type == "GGX") {
+		return new GGX_material(load_color(mj["color"]),
+			(float)mj["alpha"].get<double>(),
+			(float)mj["fresnel"].get<double>());
+	}
 }
 
 int main(int argc, char* argv[]) {
@@ -172,7 +177,7 @@ int main(int argc, char* argv[]) {
 #ifdef WRITE_WP_PERF_DATA
 		end_time = chrono::system_clock::now();
 		long long pps_tus = (chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count());
-		auto pps_tms = (double)tus / 1000000.0;
+		auto pps_tms = (double)pps_tus / 1000000.0;
 		cout << "Postprocess took: " << pps_tms << "ms" << endl;
 #endif
 	}
@@ -188,6 +193,10 @@ int main(int argc, char* argv[]) {
 	if(scenej["filename"].is<string>()) fss << scenej["filename"].get<string>() << time(nullptr) << ".bmp";
 	else fss << "img" << time(nullptr) << ".bmp";
 	rdt->write_bmp(fss.str());
+
+#ifdef WIN32
+	getchar();
+#endif
 
 	return 0;
 }

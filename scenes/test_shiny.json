@@ -6,6 +6,11 @@
 		"position" : [6, 4, 10],
 		"target"   : [0, 0.2, 0]
 	},
+	"postprocess": {
+			"gamma": 2.2,
+			"tonemap": true,
+			"tonemap-white": 0.99
+	},
 	"objects": [
 		{
 			"type":"sphere",
