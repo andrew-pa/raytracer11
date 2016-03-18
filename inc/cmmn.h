@@ -303,8 +303,6 @@ namespace raytracer11
 		return dot(dr, n) * dr;
 	}
 
-
-
 #ifdef _MSC_VER
 #define NOEXCEPT throw()
 #else
