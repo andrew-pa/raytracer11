@@ -18,9 +18,9 @@ namespace raytracer11
 
 	void renderer::render_tile_aa(uvec2 pos)
 	{
-		float smpl = (1.f / (float)samples);
+		const float smpl = (1.f / (float)samples);
 		ray r(vec3(0), vec3(0));
-		vec2 fpos = (vec2)pos;
+		const vec2 fpos = (vec2)pos;
 		for (float y = fpos.y; y < fpos.y + tile_size.y && y < render_target->size().y; ++y)
 		{
 			for (float x = fpos.x; x < fpos.x + tile_size.x && x < render_target->size().x; ++x)
@@ -30,7 +30,7 @@ namespace raytracer11
 				{
 					for (float q = 0; q < samples; ++q)
 					{
-						vec2 aaof = (vec2(p, q) + linearRand(vec2(-1), vec2(1))) * smpl;
+						const vec2 aaof = vec2(p+rand_float(), q+rand_float()) * smpl;
 						r = cam.generate_ray(vec2(x, y) + aaof);
 						fc += raycolor(r);
 					}
@@ -66,17 +66,16 @@ namespace raytracer11
 		{
 			
 			threads.push_back(thread(function<void()>([&] {
-				bool notdone = true;
 #ifdef WRITE_PER_THREAD_PERF_DATA
 				auto start_time = chrono::system_clock::now();
 				uint tiles_rendered = 0;
 #endif
-				while (notdone)
+				while (true)
 				{
 					uvec2 t;
 					{
 						unique_lock<mutex> lm(tile_queue_mutex);
-						if (tiles.empty()) { notdone = false; break; }
+						if (tiles.empty()) { break; }
 						t = tiles.front(); tiles.pop();
 					}
 					if (samples == 0) render_tile(t); 

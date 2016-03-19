@@ -63,14 +63,6 @@ namespace raytracer11
 		virtual ~surface(){}
 	};
 
-	//template <typename T>
-	//int INTERFACE_accl_struct()
-	//{
-	//	T* x = new T(vector<surface*>());
-	//	delete x;
-	//	return 0;
-	//}
-
 	class sphere : public surface
 	{
 		vec3 _c;
