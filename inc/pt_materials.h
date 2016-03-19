@@ -1,5 +1,5 @@
 #pragma once
-#include "path_tracing_renderer.h"
+#include "surface.h"
 
 namespace raytracer11 {
 
@@ -9,10 +9,10 @@ namespace raytracer11 {
 	}
 
 
-	struct emmisive_material : public path_tracing_material
+	struct emmisive_material : public material
 	{
 		emmisive_material(color_property e)
-			: path_tracing_material(e) {}
+			: material(e) {}
 
 		vec3 brdf(vec3 ki, vec3 ko, const hit_record&)	override
 		{
@@ -27,12 +27,12 @@ namespace raytracer11 {
 	};
 
 	struct diffuse_material
-		: public path_tracing_material
+		: public material
 	{
 		color_property R;
 
 		diffuse_material(color_property r)
-			: R(r), path_tracing_material(vec3(0)) {}
+			: R(r), material(vec3(0)) {}
 
 		vec3 brdf(vec3 ki, vec3 ko, const hit_record& hr)	override
 		{
@@ -46,12 +46,12 @@ namespace raytracer11 {
 		}
 	};
 
-	struct perfect_reflection_material : public path_tracing_material
+	struct perfect_reflection_material : public material
 	{
 		color_property R;
 
 		perfect_reflection_material(color_property r)
-			: R(r), path_tracing_material(vec3(0)) {}
+			: R(r), material(vec3(0)) {}
 
 		vec3 brdf(vec3 ki, vec3 ko, const hit_record& hr)	override
 		{
@@ -65,12 +65,12 @@ namespace raytracer11 {
 		}
 	};
 
-	struct perfect_refraction_material : public path_tracing_material {
+	struct perfect_refraction_material : public material {
 		color_property R;
 		float eta;
 
 		perfect_refraction_material(color_property r)
-			: R(r), path_tracing_material(vec3(0)) {}
+			: R(r), material(vec3(0)) {}
 
 		vec3 brdf(vec3 ki, vec3 ko, const hit_record& hr)	override
 		{
@@ -91,12 +91,12 @@ namespace raytracer11 {
 		}
 	};
 
-	struct cook_torrance_material : public path_tracing_material {
+	struct cook_torrance_material : public material {
 		color_property R;
 		float F0;
 
 		cook_torrance_material(color_property r, float f0)
-			: R(r), F0(f0), path_tracing_material(vec3(0)) {}
+			: R(r), F0(f0), material(vec3(0)) {}
 
 		vec3 brdf(vec3 ki, vec3 ko, const hit_record& hr)	override
 		{
@@ -107,12 +107,6 @@ namespace raytracer11 {
 			float vdh = dot(ko, h);
 			vec3 r = R(hr);
 			return r * ( (D(ndh)*F(vdh)*G(ndl, ndv, ndh, vdh)) / 4.f*ndl*ndv );
-		}
-
-		vec3 random_ray(vec3 n, vec3 ki, float* pdf) override
-		{
-			if (pdf) *pdf = 1.f / two_pi<float>();
-			return hemi_distribution(n);
 		}
 	protected:
 		virtual float D(float ndh) const = 0;

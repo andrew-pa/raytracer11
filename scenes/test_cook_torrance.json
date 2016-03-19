@@ -1,6 +1,6 @@
 {
 	"resolution" : [640, 480],
-	"samples" : 64,
+	"samples" : 16,
 	"watermark": true,
 	"camera" : {
 		"position" : [-1, 10, 16],
@@ -19,7 +19,7 @@
 		{
 			"type":"sphere", "radius":1, "center":[-2, 0, 0],
 			"material": { "type":"GGX", "color":[0.8, 0.8, 0.8], "alpha":0.75, "fresnel":0.5 }
-		}, 
+		},
 		{
 			"type":"sphere", "radius":1, "center":[0, 0, 0],
 			"material": { "type":"GGX", "color":[0.8, 0.8, 0.8], "alpha":0.5, "fresnel":0.5 }

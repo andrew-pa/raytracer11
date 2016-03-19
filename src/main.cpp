@@ -1,8 +1,7 @@
 #include "cmmn.h"
 #include "texture.h"
 #include "surface.h"
-#include "parallel_tiles_renderer.h"
-#include "path_tracing_renderer.h"
+#include "renderer.h"
 #include "pt_materials.h"
 #include "bvh_node.h"
 #include "triangle_mesh.h"
@@ -108,7 +107,7 @@ int main(int argc, char* argv[]) {
 	auto scenej = vscenej.get<picojson::value::object>();
 
 
-	texture2d* rdt = new texture2d(res_override.x > 0 ? res_override : uvec2(loadv2(scenej["resolution"])));
+	shared_ptr<texture2d> rdt = make_shared<texture2d>(res_override.x > 0 ? res_override : uvec2(loadv2(scenej["resolution"])));
 	
 	cout << "Rendering " << scene_filename << " @ [" << rdt->size().x << ", " << rdt->size().y << "]" << endl; 
 	
@@ -135,17 +134,16 @@ int main(int argc, char* argv[]) {
 		}
 
 	}
-	bvh_node* sc = new bvh_node(objects);
+	shared_ptr<bvh_node> sc = make_shared<bvh_node>(objects);
 	
 	vec2 tilesize = vec2(32);
 	if(!scenej["tile-size"].is<picojson::null>()) tilesize = loadv2(scenej["tile-size"]);
 
-	path_tracing_renderer rd(cam, sc, rdt, tilesize, numt); 
+	renderer rd(cam, sc, rdt, samples_override > 0 ? samples_override :
+		scenej["samples"].is<double>() ? scenej["samples"].get<double>() : 64, tilesize, numt);
 	
-	rd.aa_samples(samples_override > 0 ? samples_override : 
-			scenej["samples"].is<double>() ? scenej["samples"].get<double>() : 64);
 
-	cout << "render starting: [AA: " << rd.aa_samples() << ", tile size: " << rd.tile_size() << ", object count: " << objects.size() << "]" << endl;
+	cout << "render starting: [AA: " << rd.samples*rd.samples << ", tile size: " << rd.tile_size << ", object count: " << objects.size() << "]" << endl;
 
 
 	#ifdef WRITE_WP_PERF_DATA
@@ -173,7 +171,7 @@ int main(int argc, char* argv[]) {
 #ifdef WRITE_WP_PERF_DATA
 		start_time = chrono::system_clock::now();
 #endif
-		ppr.render(rdt, rdt);
+		ppr.render(rdt.get(), rdt.get());
 #ifdef WRITE_WP_PERF_DATA
 		end_time = chrono::system_clock::now();
 		long long pps_tus = (chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count());
@@ -184,8 +182,10 @@ int main(int argc, char* argv[]) {
 
 	if(!scenej["watermark"].is<picojson::null>() && scenej["watermark"].get<bool>()) {
 		ostringstream otxt;
-		otxt << "RENDERED " << scene_filename << " IN " << tms << "MS" << endl;
-		otxt << "TILE SIZE [" << rd.tile_size().x << ", " << rd.tile_size().y << "] @ " << rd.aa_samples() << " SAMPLES" << endl;
+		otxt << "RENDERED " << 
+			scene_filename.substr(scene_filename.size() > 64 ? scene_filename.length()-64 : 0) 
+			<< " IN " << tms << "MS" << endl;
+		otxt << "TILE SIZE [" << rd.tile_size.x << ", " << rd.tile_size.y << "] @ " << rd.samples*rd.samples << " SAMPLES" << endl;
 		rdt->draw_text(otxt.str(), uvec2(4), vec3(.2f));
 		rdt->draw_text(otxt.str(), uvec2(1), vec3(1.f, 1.f, 0.f));
 	}

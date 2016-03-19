@@ -1,37 +1,32 @@
 #pragma once
 #include "cmmn.h"
-#include "camera.h"
-#include "surface.h"
 #include "texture.h"
+#include "surface.h"
+#include "camera.h"
 
 namespace raytracer11
 {
-
-	class surface;
 	class renderer
 	{
-	protected:
-		camera _c;
-		surface* _scene;
-		texture<vec3,uvec2,vec2>* rt;
+		uint _numthreads;
+		void render_tile(uvec2 pos);
+		void render_tile_aa(uvec2 pos);
 	public:
-		renderer(camera c, surface* s, texture<vec3,uvec2,vec2>* _rt);
-		~renderer();
+		camera cam;
+		shared_ptr<surface> scene;
+		shared_ptr<texture<vec3, uvec2, vec2>> render_target;
+		uint samples;
+		uvec2 tile_size;
 
-		virtual void render() = 0;
-		virtual vec3 raycolor(const ray& r, uint depth = 0) = 0;
+		void render();
+	
+		const uint max_depth = 4;
 
-		proprw(camera, cam, { return _c; });
-		proprw(surface*, scene, { return _scene; });
-		inline texture<vec3, uvec2, vec2>* render_target() { return rt; }
-	};
+		vec3 raycolor(const ray& r, uint depth = 0);
 
-	class simple_renderer : public renderer
-	{
-	public:
-		simple_renderer(camera c, surface* s, texture<vec3, uvec2, vec2>* rt)
-			: renderer(c,s,rt){}
-		void render() override;
+		renderer(camera c, shared_ptr<surface> s, shared_ptr<texture<vec3, uvec2, vec2>> rt, uint aasmp = 0, uvec2 ts = uvec2(32), int numt = -1)
+			: cam(c), scene(s), render_target(rt), tile_size(ts), 
+				_numthreads(numt == -1 ? thread::hardware_concurrency() : numt), 
+				samples(aasmp) {}
 	};
 }
-

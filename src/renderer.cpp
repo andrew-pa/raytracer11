@@ -2,31 +2,121 @@
 
 namespace raytracer11
 {
-	renderer::renderer(camera c, surface* s, texture<vec3, uvec2, vec2>* _rt)
-		: _c(c), _scene(s), rt(_rt)
+	void renderer::render_tile(uvec2 pos)
 	{
-
-	}
-	
-	renderer::~renderer()
-	{
-		delete _scene;
-		_scene = nullptr;
-		delete rt;
-		rt = nullptr;
-	}
-
-	void simple_renderer::render()
-	{
-		ray r(vec3(0),vec3(0));
-		uvec2 px(0);
-		for (px.y = 0; px.y < rt->size().y; ++px.y)
+		ray r(vec3(0), vec3(0));
+		vec2 fpos = (vec2)pos;
+		for (float y = fpos.y; y < fpos.y + tile_size.y && y < render_target->size().y; ++y)
 		{
-			for (px.x = 0; px.x < rt->size().x; ++px.x)
+			for (float x = fpos.x; x < fpos.x + tile_size.x && x < render_target->size().x; ++x)
 			{
-				r = _c.generate_ray((vec2)px);
-				rt->pixel(px) = raycolor(r);
+				r = cam.generate_ray(vec2(x, y));
+				render_target->pixel(uvec2(x, y)) = raycolor(r);
 			}
 		}
+	}
+
+	void renderer::render_tile_aa(uvec2 pos)
+	{
+		const float smpl = (1.f / (float)samples);
+		ray r(vec3(0), vec3(0));
+		const vec2 fpos = (vec2)pos;
+		for (float y = fpos.y; y < fpos.y + tile_size.y && y < render_target->size().y; ++y)
+		{
+			for (float x = fpos.x; x < fpos.x + tile_size.x && x < render_target->size().x; ++x)
+			{
+				vec3 fc = vec3(0);
+				for (float p = 0; p < samples; ++p)
+				{
+					for (float q = 0; q < samples; ++q)
+					{
+						const vec2 aaof = vec2(p+rand_float(), q+rand_float()) * smpl;
+						r = cam.generate_ray(vec2(x, y) + aaof);
+						fc += raycolor(r);
+					}
+				}
+				render_target->pixel(uvec2(x, y)) = fc * (smpl*smpl);
+			}
+		}
+	}
+
+	void renderer::render()
+	{
+		mutex tile_queue_mutex;
+		queue<uvec2> tiles;
+
+		vector<uvec2> start_tiles;
+
+		for (uint y = 0; y < render_target->size().y; y += tile_size.y)
+		{
+			for (uint x = 0; x < render_target->size().x; x += tile_size.x)
+			{
+				start_tiles.push_back(uvec2(x, y));
+			}
+		}
+
+		for (int i = 0; i < 20 + start_tiles.size(); ++i)
+			swap(start_tiles[rand() % start_tiles.size()], start_tiles[rand() % start_tiles.size()]);
+
+		for (const auto& t : start_tiles)
+			tiles.push(t);
+
+		vector<thread> threads;
+		for (int ti = 0; ti < _numthreads; ++ti)
+		{
+			
+			threads.push_back(thread(function<void()>([&] {
+#ifdef WRITE_PER_THREAD_PERF_DATA
+				auto start_time = chrono::system_clock::now();
+				uint tiles_rendered = 0;
+#endif
+				while (true)
+				{
+					uvec2 t;
+					{
+						unique_lock<mutex> lm(tile_queue_mutex);
+						if (tiles.empty()) { break; }
+						t = tiles.front(); tiles.pop();
+					}
+					if (samples == 0) render_tile(t); 
+					else render_tile_aa(t);
+#ifdef WRITE_PER_THREAD_PERF_DATA
+					tiles_rendered++;
+#endif
+				}
+#ifdef WRITE_PER_THREAD_PERF_DATA
+				auto end_time = chrono::system_clock::now();
+				long long tm = abs(chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count());
+				auto tmpt = (double)tm / (double)tiles_rendered;
+				cout << "thread " << this_thread::get_id() << " rendered " << tiles_rendered << " tiles"
+					<< " took " << (double)tm / 1000000.0 << "ms, " << tmpt / 1000000.0 << "ms/tile" << endl;
+#endif
+			})));
+			
+		}
+
+		for (auto& t : threads)
+		{
+			t.join();
+		}
+	}
+
+	vec3 renderer::raycolor(const ray & r, uint depth) {
+		if (depth > max_depth) return vec3(0);
+		hit_record hr(1e9f);
+		if (scene->hit(r, hr)) {
+			auto mat = hr.hit_surface->mat();
+			if (length2(mat->Le(hr)) > 0) return mat->Le(hr);
+			vec3 v = normalize(-r.d);
+			float pk = 0.f;
+			vec3 nrd = mat->random_ray(hr.norm, v, &pk);
+			if (pk <= 0.f) return vec3(0.f);
+			return (
+					mat->brdf(nrd, v, hr) *
+					raycolor(ray(r(hr.t), nrd), depth + 1) * 
+					glm::max(0.f, dot(hr.norm, nrd))
+				) / pk;
+		}
+		else return vec3(0.f);
 	}
 }
