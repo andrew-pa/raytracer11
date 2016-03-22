@@ -32,8 +32,7 @@ namespace raytracer11
 			auto half = objects.size() / 2;
 			auto left_half = vector<surface*>(objects.begin(), objects.begin() + half);
 			auto right_half = vector<surface*>(objects.begin() + half, objects.end());
-			//optomize case where left node should only be a pntr to a primitive because left_half.size() == 1
-			
+
 			if(left_half.size() == 1)
 			{
 				_left = left_half[0];
@@ -59,39 +58,24 @@ namespace raytracer11
 	bool bvh_node::hit(const ray& r, hit_record& hr)
 	{
 		if (!_bounds.hit(r)) return false;
-		if(_left != nullptr && _right == nullptr)
+		/*if(_left != nullptr && _right == nullptr)
 		{
 			return _left->hit(r, hr);
-		}
+		}*/
 		hit_record lhr(hr), rhr(hr);
-		bool lh = (_left != nullptr ?
-			_left->hit(r, lhr) : false);
-		bool rh = (_right != nullptr ?
-			_right->hit(r, rhr) : false);
-		if(lh&&rh)
+		bool lh = (_left  != nullptr ?	_left ->hit(r, lhr) : false);
+		bool rh = (_right != nullptr ?	_right->hit(r, rhr) : false);
+		if(lh && rh)
 		{
-			if(lhr.t < rhr.t)
-			{
-				hr = lhr;
-				return true;
-			}
-			else
-			{
-				hr = rhr;
-				return true;
-			}
+			hr = lhr.t < rhr.t ? lhr : rhr;
 		}
-		else if(lh)
-		{
+		else if(lh) {
 			hr = lhr;
-			return true;
 		}
-		else if(rh)
-		{
+		else if(rh) {
 			hr = rhr;
-			return true;
 		}
-		return false;
+		return lh || rh;
 	}
 
 	float bvh_node::hit(const ray& r, float xt)

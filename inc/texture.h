@@ -49,6 +49,10 @@ namespace raytracer11
 		virtual ~texture2d();
 	};
 
+
+
+
+
 	class checker_texture : public texture<vec3, uvec2, vec2>
 	{
 		float _checker_size;

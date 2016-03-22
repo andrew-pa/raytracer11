@@ -1,6 +1,6 @@
 #pragma once
 #include "cmmn.h"	
-#include "renderer.h"
+#include "texture.h"
 
 namespace raytracer11
 {
@@ -20,11 +20,34 @@ namespace raytracer11
 		{}
 	};
 
-	class renderer;
+	struct color_property {
+		vec3 col;
+		texture<vec3, uvec2, vec2>* tex;
+	public:
+		color_property(vec3 c = vec3(0.f))
+			: col(c), tex(nullptr) {}
+		color_property(texture<vec3, uvec2, vec2>* t)
+			: tex(t), col(0.f) {}
 
-	struct material
-	{
-		virtual vec3 shade(renderer* rndr, const ray& r, vec3 l, vec3 lc, const hit_record& hr, uint depth = 0) = 0;
+		void operator =(vec3 c) { col = c; tex = nullptr; }
+		void operator =(texture<vec3, uvec2, vec2>* t) { tex = t; }
+
+		inline vec3 operator()(const hit_record& hr) const {
+			if (tex) return tex->texel(hr.texcoord);
+			else return col;
+		}
+	};
+
+	struct material {
+		color_property Le;
+		virtual vec3 random_ray(vec3 n, vec3 ko, float* pdf) {
+			//this sampling distribution works for every BRDF but can be very noisy
+			if (pdf) *pdf = 1.f / two_pi<float>();
+			return hemi_distribution(n);
+		}
+		virtual vec3 brdf(vec3 ko, vec3 ki, const hit_record& hr) = 0;
+	protected:
+		material(const color_property& le) : Le(le) {}
 	};
 
 	class surface
@@ -39,14 +62,6 @@ namespace raytracer11
 
 		virtual ~surface(){}
 	};
-
-	//template <typename T>
-	//int INTERFACE_accl_struct()
-	//{
-	//	T* x = new T(vector<surface*>());
-	//	delete x;
-	//	return 0;
-	//}
 
 	class sphere : public surface
 	{

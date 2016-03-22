@@ -11,14 +11,14 @@
 #include "grid.h"
 using namespace raytracer11;
 
-struct test_mat : public path_tracing_material
+struct test_mat : public material
 {
 	vec3 R;
 	float percent_cone;
 	float cone_radius;
 
 	test_mat(vec3 r, float pc = .8f, float cr = .2f)
-		: R(r), percent_cone(.8f), cone_radius(cr), path_tracing_material(vec3(0)) {}
+		: R(r), percent_cone(.8f), cone_radius(cr), material(vec3(0)) {}
 
 	vec3 brdf(vec3 ki, vec3 ko, const hit_record&)	override
 	{
@@ -43,14 +43,14 @@ vec3 schlick(vec3 c, float dkih)
 	return c + (vec3(1.f) - c)*pow(1.f - (dkih), 5.f);
 }
 
-struct rlm_mat : public path_tracing_material
+struct rlm_mat : public material
 {
 	vec3 Rd;
 	vec3 Rs;
 	vec2 n;
 
 	rlm_mat(vec3 rd, vec3 rs, vec2 _n = vec2(100,100))
-		: Rd(rd), Rs(rs), n(_n), path_tracing_material(vec3(0)) {}
+		: Rd(rd), Rs(rs), n(_n), material(vec3(0)) {}
 
 	vec3 brdf(vec3 ki, vec3 ko, const hit_record& hr)	override
 	{
