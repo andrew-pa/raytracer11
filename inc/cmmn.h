@@ -221,6 +221,11 @@ namespace raytracer11
 			return (_min + _max) * 1.f/2.f;
 		}
 
+		inline float surface_area() {
+			vec3 d = _max - _min;
+			return 2.f * (d.x * d.y + d.x * d.z + d.y * d.z);
+		}
+
 		inline void add_aabb(const aabb& b)
 		{
 			add_point(b._min);
