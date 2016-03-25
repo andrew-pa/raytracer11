@@ -18,7 +18,6 @@ namespace raytracer11
 				{
 					if(i2 < hr.t)
 					{
-						hr.t = i2;//what?!
 						return false;
 					}
 				}

@@ -172,7 +172,7 @@ namespace raytracer11
 
 		inline bool hit(const ray& r) const
 		{
-			if (contains(r.e)) return true;
+			//if (contains(r.e)) return true;
 
 			vec3 rrd = 1.f / r.d;
 

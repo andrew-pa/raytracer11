@@ -1,6 +1,6 @@
 #include "bvh_node.h"
 
-//#define MIDPOINT
+#define MIDPOINT
 
 namespace raytracer11
 {

@@ -102,19 +102,19 @@ namespace raytracer11
 	}
 
 	vec3 renderer::raycolor(const ray & r, uint depth) {
-		if (depth > max_depth) return vec3(0);
+		if (depth > max_depth) return env_map != nullptr ? env_map->texel(r.d)*env_luma : vec3(0);
 		hit_record hr(1e9f);
 		if (scene->hit(r, hr)) {
 			auto mat = hr.hit_surface->mat();
 			if (length2(mat->Le(hr)) > 0) return mat->Le(hr);
 			vec3 v = normalize(-r.d);
-			float pk = 0.f;
-			vec3 nrd = mat->random_ray(hr.norm, v, &pk);
-			if (pk <= 0.f) return vec3(0.f);
+			float pk = 0.f; material::ray_type rt;
+			vec3 nrd = mat->random_ray(hr.norm, v, &pk, &rt);
+			if (pk <= 0.f) return env_map != nullptr ? env_map->texel(r.d)*env_luma : vec3(0);
 			return (
 					mat->brdf(nrd, v, hr) *
-					raycolor(ray(r(hr.t), nrd), depth + 1) * 
-					glm::max(0.f, dot(hr.norm, nrd))
+					raycolor(ray(r(hr.t) + nrd*0.001f, nrd), depth + 1) *
+					glm::max(0.f, dot(hr.norm * (rt == material::ray_type::transmission ? -1.f : 1.f), nrd) )
 				) / pk;
 		}
 		else return vec3(0.f);

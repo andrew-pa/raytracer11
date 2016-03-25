@@ -15,6 +15,8 @@ namespace raytracer11
 		camera cam;
 		shared_ptr<surface> scene;
 		shared_ptr<texture<vec3, uvec2, vec2>> render_target;
+		shared_ptr<texture<vec3, uvec3, vec3>> env_map;
+		float env_luma;
 		uint samples;
 		uvec2 tile_size;
 

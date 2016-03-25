@@ -40,10 +40,13 @@ namespace raytracer11
 
 	struct material {
 		color_property Le;
-		virtual vec3 random_ray(vec3 n, vec3 ko, float* pdf) {
-			//this sampling distribution works for every BRDF but can be very noisy
-			if (pdf) *pdf = 1.f / two_pi<float>();
-			return hemi_distribution(n);
+		enum class ray_type {
+			reflection, transmission
+		};
+		virtual vec3 random_ray(vec3 n, vec3 ki, float* pdf, ray_type* type) {
+			if (type) *type = ray_type::reflection;
+			if (pdf) *pdf = dot(ki, n) / pi<float>();
+			return cosine_distribution(n);
 		}
 		virtual vec3 brdf(vec3 ko, vec3 ki, const hit_record& hr) = 0;
 	protected:

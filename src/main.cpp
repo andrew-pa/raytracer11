@@ -34,7 +34,10 @@ color_property load_color(const picojson::value& v) {
 	}
 }
 
-material* load_material(const picojson::value& v) {
+material* load_material(const picojson::value& v, map<string, material*>& named_materials) {
+	if (v.is<string>()) {
+		return named_materials[v.get<string>()];
+	}
 	auto mj = v.get<picojson::value::object>();
 	string type = mj["type"].get<string>();
 	if(type == "diffuse") {
@@ -43,7 +46,10 @@ material* load_material(const picojson::value& v) {
 		return new emmisive_material(load_color(mj["color"]));
 	} else if (type == "perfect-reflection") {
 		return new perfect_reflection_material(load_color(mj["color"]));
-	} else if (type == "GGX") {
+	} else if (type == "perfect-refraction") {
+		return new perfect_refraction_material(load_color(mj["color"]), (float)mj["eta"].get<double>());
+	}
+	else if (type == "GGX") {
 		return new GGX_material(load_color(mj["color"]),
 			(float)mj["alpha"].get<double>(),
 			(float)mj["fresnel"].get<double>());
@@ -114,13 +120,18 @@ int main(int argc, char* argv[]) {
 	auto camj = scenej["camera"].get<picojson::value::object>();
 	camera cam(loadv3(camj["position"]), loadv3(camj["target"]), (vec2)rdt->size(), 1.f);
 
-
+	map<string, material*> named_materials;
+	if (!scenej["materials"].is<picojson::null>()) {
+		for (const auto& mt : scenej["materials"].get<picojson::value::object>()) {
+			named_materials[mt.first] = load_material(mt.second, named_materials);
+		}
+	}
 
 	vector<surface*> objects;
 	for(const auto& vobjj : scenej["objects"].get<picojson::value::array>()) {
 		auto objj = vobjj.get<picojson::value::object>();
 		auto type = objj["type"].get<string>();
-		auto mat = load_material(objj["material"]);
+		auto mat = load_material(objj["material"], named_materials);
 		if(type == "sphere") {
 			objects.push_back(new sphere(loadv3(objj["center"]), objj["radius"].get<double>(), mat));
 		} else if(type == "box") {

@@ -19,9 +19,10 @@ namespace raytracer11 {
 			return vec3(0);
 		}
 
-		vec3 random_ray(vec3 n, vec3 ki, float* pdf) override
+		vec3 random_ray(vec3 n, vec3 ki, float* pdf, ray_type* type) override
 		{
 			if (pdf) *pdf = 0;
+			if (type) *type = ray_type::reflection;
 			return vec3(0);
 		}
 	};
@@ -39,11 +40,6 @@ namespace raytracer11 {
 			return R(hr);
 		}
 
-		vec3 random_ray(vec3 n, vec3 ki, float* pdf) override
-		{
-			if (pdf) *pdf = dot(ki, n) / pi<float>();
-			return cosine_distribution(n);
-		}
 	};
 
 	struct perfect_reflection_material : public material
@@ -58,9 +54,10 @@ namespace raytracer11 {
 			return R(hr);
 		}
 
-		vec3 random_ray(vec3 n, vec3 ki, float* pdf) override
+		vec3 random_ray(vec3 n, vec3 ki, float* pdf, ray_type* type) override
 		{
 			if (pdf) *pdf = 1.f;
+			if (type) *type = ray_type::reflection;
 			return reflect(-ki, n);
 		}
 	};
@@ -69,26 +66,28 @@ namespace raytracer11 {
 		color_property R;
 		float eta;
 
-		perfect_refraction_material(color_property r)
-			: R(r), material(vec3(0)) {}
+		perfect_refraction_material(color_property r, float Eta)
+			: R(r), material(vec3(0)), eta(Eta) {}
 
 		vec3 brdf(vec3 ki, vec3 ko, const hit_record& hr)	override
 		{
 			return R(hr);
 		}
 
-		vec3 random_ray(vec3 n, vec3 ki, float* pdf) override
+		vec3 random_ray(vec3 n, vec3 ki, float* pdf, ray_type* type) override
 		{
 			if (pdf) *pdf = 1.f;
 			float ndki = dot(n, ki);
 			float angle = 1.f - eta*eta * (1.f - ndki*ndki);
-			if (angle < 0.f)
+			if (angle < 0.f) {
+				if (type) *type = ray_type::reflection;
 				return reflect(-ki, n);
-			else {
+			} else {
+				if (type) *type = ray_type::transmission;
 				return (-eta * ndki - sqrt(angle)) * n + ki * eta;
 			}
-			return reflect(-ki, n);
 		}
+
 	};
 
 	struct cook_torrance_material : public material {
