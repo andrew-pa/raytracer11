@@ -60,6 +60,21 @@ namespace raytracer11
 
 	}
 
+
+	vec3& textureCube::texel(vec3 c)
+	{
+		c *= -1.f;
+		vec3 r = abs(c);
+		vec3 s = c / glm::max(r.x, glm::max(r.y, r.z));
+		if (feq(s.x, 1.f)) return faces[0]->texel(s.yz);
+		else if (feq(s.x, -1.f)) return faces[1]->texel(s.yz);
+		else if (feq(s.y, 1.f)) return faces[3]->texel(s.xz);
+		else if (feq(s.y, -1.f)) return faces[2]->texel(s.xz);
+		else if (feq(s.z, 1.f)) return faces[4]->texel(s.xy);
+		else if (feq(s.z, -1.f)) return faces[5]->texel(s.xy);
+		else throw;
+	}
+
 #pragma region STB_IMAGE_WRITE
 	namespace stb_image_write
 	{

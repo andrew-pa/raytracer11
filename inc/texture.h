@@ -49,7 +49,24 @@ namespace raytracer11
 		virtual ~texture2d();
 	};
 
+	class textureCube : public texture<vec3, uvec3, vec3> {
+	public:
+		shared_ptr<texture<vec3, uvec2, vec2>> faces[6];
+		
+		textureCube(const vector<shared_ptr<texture<vec3, uvec2, vec2>>>& fc) {
+			assert(fc.size() == 6);
+			for (int i = 0; i < 6; ++i) faces[i] = fc[i];
+		}
 
+		inline vec3& pixel(uvec3 c) override
+		{
+			return faces[c.z]->pixel(uvec2(c.x,c.y));
+		}
+
+		vec3& texel(vec3 c) override;
+
+		propr(uvec3, size, override{ return uvec3(faces[0]->size(), 6); })
+	};
 
 
 
@@ -77,14 +94,43 @@ namespace raytracer11
 
 		inline vec3& texel(vec2 uv)
 		{
-			int ch = fabsf((int)(floor(uv.x*_checker_size)
-				+ floor(uv.y*_checker_size)));
+			int ch = (int)fabsf(floor(uv.x*_checker_size) + floor(uv.y*_checker_size));
 			return colors[ch%2];
 		}
 
 		propr(uvec2, size, override{ return uvec2(64, 64); });
 	};
 
+	class grid_texture : public texture<vec3, uvec2, vec2>
+	{
+		float _checker_size;
+		vec3 colors[2];
+	public:
+		proprw(vec3, color0, { return colors[0]; });
+		proprw(vec3, color1, { return colors[1]; });
+		proprw(float, checker_size, { return _checker_size; });
+
+		grid_texture(vec3 c0 = vec3(1, 1, 0), vec3 c1 = vec3(0, 1, 0), float cs = 8.f)
+			: _checker_size(cs)
+		{
+			colors[0] = c0;
+			colors[1] = c1;
+		}
+
+		//don't use this!
+		inline vec3& pixel(uvec2 xy)
+		{
+			return texel((vec2)xy / vec2(64, 64));
+		}
+
+		inline vec3& texel(vec2 uv)
+		{
+			int ch = (int)fabsf(floor(uv.x*_checker_size) + floor(uv.y*_checker_size));
+			return colors[ch % 2];
+		}
+
+		propr(uvec2, size, override{ return uvec2(64, 64); });
+	};
 
 
 	/*class noise_texture : public texture<vec3, uvec2, vec2>

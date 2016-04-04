@@ -6,6 +6,11 @@
 		"position" : [6, 4, 10],
 		"target"   : [0, 0.2, 0]
 	},
+	"postprocess": {
+			"gamma": 2.2,
+			"tonemap": true,
+			"tonemap-white": 0.9
+	},
 	"objects": [
 		{
 			"type":"sphere",
@@ -24,7 +29,7 @@
 			"center":[0, -1.2, 0],
 			"extent":[4, 0.2, 4],
 			"material": { "type":"diffuse", "color":
-        { "type":"checker", "color0":[0.2,0.2,0.2], "color1":[0.4,0.4,0.4], "size":0.5 } }
+        	{ "type":"checker", "color0":[0.2,0.2,0.2], "color1":[0.3,0.4,0.3], "size":0.5 } }
 		},
 		{
 			"type":"box",

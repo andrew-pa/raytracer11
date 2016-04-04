@@ -1,0 +1,53 @@
+{
+	"resolution" : [640, 480],
+	"samples" : 16,
+	"watermark": true,
+	"camera" : {
+		"position" : [0, 0, -100],
+		"target"   : [0, 0.2, 0]
+	},
+	"postprocess": {
+			"gamma": 2.2,
+			"tonemap": true,
+			"tonemap-white": 1.2
+	},
+	"env-map": {
+		"luma": 1,
+		"x-": "../scenes/nalovardo-cubemap/negx.bmp",
+		"x+": "../scenes/nalovardo-cubemap/posx.bmp",
+		"y-": "../scenes/nalovardo-cubemap/negy.bmp",
+		"y+": "../scenes/nalovardo-cubemap/posy.bmp",
+		"z-": "../scenes/nalovardo-cubemap/negz.bmp",
+		"z+": "../scenes/nalovardo-cubemap/posz.bmp"
+	},
+	"objects": [
+		{
+			"type":"sphere",
+			"center":[-1.2, 0, 0],
+			"radius":1,
+			"material": { "type":"diffuse", "color":[0.3, 0.15, 0.05] }
+		},
+		{
+			"type":"sphere",
+			"center":[1.2, 0, 0],
+			"radius":1,
+			"material": { "type":"diffuse", "color":[0.05, 0.15, 0.3] }
+		},
+		{
+			"type":"sphere", "radius":1, "center":[2.4, 0, -1],
+			"material": { "type":"GGX", "color":[0.2, 0.8, 0.2], "alpha":0.05, "fresnel":0.75 }
+		},
+		{
+			"type":"box",
+			"center":[0, -1.2, 0],
+			"extent":[4, 0.2, 4],
+			"material": { "type":"diffuse", "color": [0.2, 0.2, 0.2] }
+		},
+		{
+			"type":"box",
+			"center":[0, 4, 0],
+			"extent":[1, 0.1, 1],
+			"material": { "type":"emission", "color":[6, 6, 5] }
+		}
+	]
+}

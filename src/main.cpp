@@ -58,9 +58,9 @@ material* load_material(const picojson::value& v, map<string, material*>& named_
 
 int main(int argc, char* argv[]) {
 	srand(time(nullptr));
-	vector<string> args; for(int i = 1; i < argc; ++i) args.push_back(argv[i]);
-	
-	if(args.size() == 0) {
+	vector<string> args; for (int i = 1; i < argc; ++i) args.push_back(argv[i]);
+
+	if (args.size() == 0) {
 		cout << "Need at least a scene file";
 		return -1;
 	}
@@ -104,9 +104,9 @@ int main(int argc, char* argv[]) {
 	ifstream scenef(scene_filename);
 	picojson::value vscenej;
 	string err;
-	istream_iterator<char> scenefi{scenef};
-	picojson::parse(vscenej, scenefi, istream_iterator<char>(),  &err);
-	if(!err.empty()) {
+	istream_iterator<char> scenefi{ scenef };
+	picojson::parse(vscenej, scenefi, istream_iterator<char>(), &err);
+	if (!err.empty()) {
 		cerr << "Scene parse error: " << err << endl;
 
 	}
@@ -114,9 +114,9 @@ int main(int argc, char* argv[]) {
 
 
 	shared_ptr<texture2d> rdt = make_shared<texture2d>(res_override.x > 0 ? res_override : uvec2(loadv2(scenej["resolution"])));
-	
-	cout << "Rendering " << scene_filename << " @ [" << rdt->size().x << ", " << rdt->size().y << "]" << endl; 
-	
+
+	cout << "Rendering " << scene_filename << " @ [" << rdt->size().x << ", " << rdt->size().y << "]" << endl;
+
 	auto camj = scenej["camera"].get<picojson::value::object>();
 	camera cam(loadv3(camj["position"]), loadv3(camj["target"]), (vec2)rdt->size(), 1.f);
 
@@ -128,15 +128,17 @@ int main(int argc, char* argv[]) {
 	}
 
 	vector<surface*> objects;
-	for(const auto& vobjj : scenej["objects"].get<picojson::value::array>()) {
+	for (const auto& vobjj : scenej["objects"].get<picojson::value::array>()) {
 		auto objj = vobjj.get<picojson::value::object>();
 		auto type = objj["type"].get<string>();
 		auto mat = load_material(objj["material"], named_materials);
-		if(type == "sphere") {
+		if (type == "sphere") {
 			objects.push_back(new sphere(loadv3(objj["center"]), objj["radius"].get<double>(), mat));
-		} else if(type == "box") {
+		}
+		else if (type == "box") {
 			objects.push_back(new box(loadv3(objj["center"]), loadv3(objj["extent"]), mat));
-		} else if (type == "mesh") {
+		}
+		else if (type == "mesh") {
 			mat4 w = mat4(1);
 			if (objj["scale"].is<picojson::array>()) w = scale(w, loadv3(objj["scale"]));
 			if (objj["rotation-axis"].is<picojson::array>()) w = rotate(w, (float)objj["rotation-angle"].get<double>(), loadv3(objj["rotation-axis"]));
@@ -146,13 +148,25 @@ int main(int argc, char* argv[]) {
 
 	}
 	shared_ptr<bvh_node> sc = make_shared<bvh_node>(objects);
-	
+
 	vec2 tilesize = vec2(32);
-	if(!scenej["tile-size"].is<picojson::null>()) tilesize = loadv2(scenej["tile-size"]);
+	if (!scenej["tile-size"].is<picojson::null>()) tilesize = loadv2(scenej["tile-size"]);
 
 	renderer rd(cam, sc, rdt, samples_override > 0 ? samples_override :
 		scenej["samples"].is<double>() ? scenej["samples"].get<double>() : 64, tilesize, numt);
-	
+
+	if (!scenej["env-map"].is<picojson::null>()) {
+		auto envmp = scenej["env-map"].get<picojson::object>();
+		rd.env_luma = (float)envmp["luma"].get<double>();
+		rd.env_map = make_shared<textureCube>(vector<shared_ptr<texture<vec3, uvec2, vec2>>>{
+			make_shared<texture2d>(envmp["x-"].get<string>()),
+			make_shared<texture2d>(envmp["x+"].get<string>()),
+			make_shared<texture2d>(envmp["y-"].get<string>()),
+			make_shared<texture2d>(envmp["y+"].get<string>()),
+			make_shared<texture2d>(envmp["z-"].get<string>()), 
+			make_shared<texture2d>(envmp["z+"].get<string>()),
+		});
+	}
 
 	cout << "render starting: [AA: " << rd.samples*rd.samples << ", tile size: " << rd.tile_size << ", object count: " << objects.size() << "]" << endl;
 

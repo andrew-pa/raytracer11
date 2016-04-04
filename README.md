@@ -1,7 +1,10 @@
 raytracer11
 ===========
 
-raytracer v11. Actualy a path tracer. 
+raytracer v11. Actualy a path tracer.
 
-The scene is still described in the main() function, shaders are implemented but are a bit strange for path tracing
 Better than raytracer9
+
+- Includes several materials (perfect reflection/refraction; Cook-Torrance GGX, diffuse)
+- JSON based scene discription file
+- Fairly fast, uses SAH built BVH trees

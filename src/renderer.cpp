@@ -117,6 +117,6 @@ namespace raytracer11
 					glm::max(0.f, dot(hr.norm * (rt == material::ray_type::transmission ? -1.f : 1.f), nrd) )
 				) / pk;
 		}
-		else return vec3(0.f);
+		else return env_map != nullptr ? env_map->texel(r.d)*env_luma : vec3(0);
 	}
 }

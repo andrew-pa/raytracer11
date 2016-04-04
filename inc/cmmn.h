@@ -55,6 +55,7 @@ public:
 using namespace std;
 
 #define GLM_FORCE_RADIANS
+#define GLM_SWIZZLE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/io.hpp>
@@ -232,6 +233,10 @@ namespace raytracer11
 			add_point(b._max);
 		}
 	};
+
+	inline bool feq(float a, float b) {
+		return fabsf(b - a) < numeric_limits<float>::epsilon();
+	}
 
 	static mt19937 rnd_generator;
 

@@ -81,7 +81,7 @@
 			"extent":[6, 0.2, 6],
 			"material": {
 				"type":"diffuse",
-				"color": [0.3, 0.3, 0.3]
+				"color": { "type":"checker", "color0":[0.2,0.2,0.2], "color1":[0.2,0.4,0.2], "size":0.5 }
 			}
 		},
 		{
