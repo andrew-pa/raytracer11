@@ -68,7 +68,7 @@ namespace raytracer11
 			else
 			{
 				auto h = _bounds.hit_retint(r);
-				if(h.second >= h.first) //tmax >= tmin
+				if(h.last >= h.first) //tmax >= tmin
 				{
 					vec3 p = r(h.first);
 					origin_voxel = uvec3((p - _bounds._min) / voxel_size);
