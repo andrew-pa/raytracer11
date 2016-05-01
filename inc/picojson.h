@@ -102,6 +102,7 @@ namespace picojson {
 		object_type,
 		cons_type,
 		func_type,
+		id_type,
 #ifdef PICOJSON_USE_INT64
 		, int64_type
 #endif
@@ -112,7 +113,7 @@ namespace picojson {
 	};
 
 	struct null {};
-	
+
 	struct context;
 
 	class value {
@@ -121,6 +122,7 @@ namespace picojson {
 		typedef std::map<std::string, value> object;
 		typedef std::function<value(context&, const std::vector<value>&)> vfunc;
 		struct cons { std::shared_ptr<value> first, last; cons(std::shared_ptr<value> f = nullptr, std::shared_ptr<value> s = nullptr) : first(f), last(s) {} };
+
 		union _storage {
 			bool boolean_;
 			double number_;
@@ -145,6 +147,7 @@ namespace picojson {
 #endif
 		explicit value(double n);
 		explicit value(const std::string& s);
+		explicit value(const std::string& s, int); //create a ID type instead
 		explicit value(const array& a);
 		explicit value(const object& o);
 		explicit value(const char* s);
@@ -180,6 +183,7 @@ namespace picojson {
 	typedef value::object object;
 	typedef value::cons cons_cell;
 	typedef value::vfunc vfunc;
+	typedef std::string* id;
 
 	inline value::value() : type_(null_type) {}
 
@@ -192,6 +196,7 @@ namespace picojson {
 			INIT(int64_, 0);
 #endif
 			INIT(string_, new std::string());
+		case id_type: u_.string_ = new std::string(); break;
 			INIT(array_, new array());
 			INIT(object_, new object());
 			INIT(cons_, new cons());
@@ -230,6 +235,11 @@ namespace picojson {
 		u_.string_ = new std::string(s);
 	}
 
+	inline value::value(const std::string& s, int) : type_(id_type) {
+		u_.string_ = new std::string(s);
+	}
+
+
 	inline value::value(const array& a) : type_(array_type) {
 		u_.array_ = new array(a);
 	}
@@ -258,6 +268,7 @@ namespace picojson {
 		switch (type_) {
 #define DEINIT(p) case p##type: delete u_.p; break
 			DEINIT(string_);
+		case id_type: delete u_.string_; break;
 			DEINIT(array_);
 			DEINIT(object_);
 			DEINIT(cons_);
@@ -271,6 +282,7 @@ namespace picojson {
 		switch (type_) {
 #define INIT(p, v) case p##type: u_.p = v; break
 			INIT(string_, new std::string(*x.u_.string_));
+		case id_type: u_.string_ = new std::string(*x.u_.string_); break;
 			INIT(array_, new array(*x.u_.array_));
 			INIT(object_, new object(*x.u_.object_));
 			INIT(cons_, new cons(*x.u_.cons_));
@@ -305,6 +317,7 @@ namespace picojson {
 		IS(int64_t, int64)
 #endif
 		IS(std::string, string)
+		IS(id, id)
 		IS(array, array)
 		IS(object, object)
 		IS(cons_cell, cons)
@@ -331,6 +344,7 @@ namespace picojson {
   }
 	GET(bool, u_.boolean_)
 		GET(std::string, *u_.string_)
+		GET(id, u_.string_)
 		GET(array, *u_.array_)
 		GET(object, *u_.object_)
 		GET(cons_cell, *u_.cons_)
@@ -428,6 +442,7 @@ namespace picojson {
 			return buf;
 		}
 		case string_type:    return *u_.string_;
+		case id_type: return *u_.string_;
 		case array_type:     return "array";
 		case object_type:    return "object";
 		case cons_type: return "cons";
@@ -516,6 +531,19 @@ namespace picojson {
 				}
 			}
 			*oi++ = ']';
+			break;
+		}
+		case cons_type: {
+			*oi++ = '(';
+			auto nx = u_.cons_;
+			while (nx != nullptr) {
+				if (nx->first == nullptr) break;
+				nx->first->serialize(oi, indent);
+				if (nx->last == nullptr) break;
+				*oi++ = ' ';
+				nx = &nx->last->get<cons_cell>();
+			}
+			*oi++ = ')';
 			break;
 		}
 		case object_type: {
@@ -879,7 +907,7 @@ namespace picojson {
 					ch = in.getc();
 				}
 				in.ungetc();
-				ctx.set_string(str);
+				ctx.set_id(str);
 				return true;
 			}
 			break;
@@ -897,6 +925,7 @@ namespace picojson {
 #endif
 		bool set_number(double) { return false; }
 		bool set_string(const std::string& s) { return false; }
+		bool set_id(const std::string& s) { return false; }
 		template <typename Iter> bool parse_string(input<Iter>&) { return false; }
 		bool parse_array_start() { return false; }
 		template <typename Iter> bool parse_array_item(input<Iter>&, size_t) { return false; }
@@ -940,6 +969,10 @@ namespace picojson {
 		}
 		bool set_string(const std::string& s) {
 			*out_ = value(s);
+			return true;
+		}
+		bool set_id(const std::string& s) {
+			*out_ = value(s, 0);
 			return true;
 		}
 		template<typename Iter> bool parse_string(input<Iter>& in) {
@@ -1000,6 +1033,7 @@ namespace picojson {
 #endif
 		bool set_number(double) { return true; }
 		bool set_string(const std::string&) { return true;  }
+		bool set_id(const std::string& s) { return true; }
 		template <typename Iter> bool parse_string(input<Iter>& in) {
 			dummy_str s;
 			return _parse_string(s, in);
@@ -1134,7 +1168,7 @@ namespace picojson {
 	inline value resolve(const value& v, context& cx) {
 		if (v.is<cons_cell>()) {
 			picojson::cons_cell cc = v.get<cons_cell>();
-			auto F = cx.named_value(cc.first->get<std::string>());
+			auto F = cx.named_value(*cc.first->get<id>());
 			std::vector<value> args;
 			auto nx = &cc.last->get<cons_cell>();
 			while (nx != nullptr) {
@@ -1160,10 +1194,10 @@ namespace picojson {
 			return value(o);
 		}
 		else if (v.is<std::string>()) {
-			if (v.get<std::string>()[0] != '|') {
-				return cx.named_value(v.get<std::string>());
-			}
-			else return v;
+			return v;
+		}
+		else if (v.is<id>()) {
+			return cx.named_value(*v.get<id>());
 		}
 		else {
 			return v;

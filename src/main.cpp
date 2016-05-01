@@ -59,11 +59,15 @@ material* load_material(const picojson::value& v, map<string, material*>& named_
 
 int main(int argc, char* argv[]) {
 
-	picojson::value val;
-	picojson::parse(val, R"({ "d1": (defvar x 3), "d2": (defun square (x) (* x x)), "math": (+ x (square 6)) })");
 	picojson::context cx;
 	picojson::init_cmmn_lisp(cx);
-	auto nv = resolve(val, cx);
+	while (true) {
+		picojson::value val;
+		string s; getline(cin, s);
+		picojson::parse(val, s); //R"({ "d1": (defvar x 3), "d2": (defun square (x) (* x x)), "math": (+ x (square 6)) })"
+		auto nv = resolve(val, cx);
+		cout << nv.serialize(true) << endl;
+	}
 
 	srand(time(nullptr));
 	vector<string> args; for (int i = 1; i < argc; ++i) args.push_back(argv[i]);
